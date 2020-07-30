@@ -3,6 +3,7 @@ from PIL import Image, ImageTk
 import os
 from os import path
 import random as rand
+from blackjack import *
 # 500x726,0.6887
 class Application(tk.Frame):
     """docstring for Application."""
@@ -10,10 +11,12 @@ class Application(tk.Frame):
     def __init__(self, master=None):
         super().__init__(master)
         self.master = master
-        self.master.title("TTC Manager")
+        self.master.title("Blackjack - Basic Strategy")
         # self.master.iconbitmap('out3_nr3_icon.ico')
         self.master.geometry("800x500")
         self.pack(fill="both", expand=1)
+
+        self.game = Blackjack()
 
         self.images_load()
         self.widgets_create()
@@ -26,11 +29,23 @@ class Application(tk.Frame):
         self.button1["text"] = "Press the button!"
         self.button1["command"] = self.change_dealer_card
         self.button1.grid(row=1, column=1, sticky="e")
-        #
-        self.card_dealer = tk.Label(self.panel1, image=self.card_sprites["back"])
-        # self.card_dealer["width"] = 100
-        # self.card_dealer["width"] = 100
-        self.card_dealer.grid(row=0, column=1)
+
+        self.deck = tk.Label(self.panel1, image=self.card_sprites["back"])
+        self.deck["padx"] = 50
+        self.deck.grid(row=0, column=0)
+
+        self.house_hidden = tk.Label(self.panel1, image=self.card_sprites["back"])
+        self.house_hidden.grid(row=0, column=1)
+
+        self.house_vis1 = tk.Label(self.panel1, image=self.card_sprites["red_joker"])
+        self.house_vis1.grid(row=0, column=2)
+
+        self.player_c1 = tk.Label(self.panel1, image=self.card_sprites["red_joker"])
+        self.player_c1.grid(row=2, column=1)
+
+        self.player_c2 = tk.Label(self.panel1, image=self.card_sprites["red_joker"])
+        self.player_c2.grid(row=2, column=2)
+
 
     def images_load(self):
         self.card_sprites = dict()
@@ -44,7 +59,9 @@ class Application(tk.Frame):
 
 
     def change_dealer_card(self):
-        self.card_dealer["image"] = rand.choice(list(self.card_sprites.values())) # self.card_sprites["10_of_clubs"]
+        rand_num = rand.choice(range(0,52))
+        card_name = Blackjack.number_to_card(rand_num)
+        self.house_vis1["image"] = self.card_sprites[card_name]
 
 
 
