@@ -23,7 +23,8 @@ class Application(tk.Frame):
 
     def widgets_create(self):
         self.panel1 = tk.Frame(self)
-        self.panel1.pack(side="left", fill="y")
+        self.panel1["bg"] = "#006644"
+        self.panel1.pack(side="top", fill="y", expand=1)
 
         self.button1 = tk.Button(self.panel1)
         self.button1["text"] = "Press the button!"
@@ -31,7 +32,7 @@ class Application(tk.Frame):
         self.button1.grid(row=1, column=1, sticky="e")
 
         self.deck = tk.Label(self.panel1, image=self.card_sprites["back"])
-        self.deck["padx"] = 50
+        self.deck["padx"] = 200
         self.deck.grid(row=0, column=0)
 
         self.house_hidden = tk.Label(self.panel1, image=self.card_sprites["back"])
@@ -59,9 +60,20 @@ class Application(tk.Frame):
 
 
     def change_dealer_card(self):
-        rand_num = rand.choice(range(0,52))
-        card_name = Blackjack.number_to_card(rand_num)
-        self.house_vis1["image"] = self.card_sprites[card_name]
+        # rand_num = rand.choice(range(0,52))
+        # card_name = Blackjack.number_to_card(rand_num)
+        # self.house_vis1["image"] = self.card_sprites[card_name]
+        self.game.clear()
+        self.game.deal()
+
+        house_card2 = Blackjack.number_to_card( self.game.house[1] )
+        player_card1 = Blackjack.number_to_card( self.game.player[0] )
+        player_card2 = Blackjack.number_to_card( self.game.player[1] )
+
+        self.house_vis1["image"] = self.card_sprites[house_card2]
+        self.player_c1["image"] = self.card_sprites[player_card1]
+        self.player_c2["image"] = self.card_sprites[player_card2]
+
 
 
 
