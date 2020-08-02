@@ -9,6 +9,7 @@ class Blackjack():
 
         self.reset()
 
+    # Move cards on table into the discard pile.
     def clear(self):
         while(len(self.house) > 0):
             self.discard.append(self.house.pop())
@@ -16,6 +17,8 @@ class Blackjack():
         while(len(self.player) > 0):
             self.discard.append(self.player.pop())
 
+
+    # Deal out the cards.
     def deal(self):
         print(self.deck)
         self.house.append(self.deck.pop())
@@ -23,6 +26,7 @@ class Blackjack():
 
         self.player.append(self.deck.pop())
         self.player.append(self.deck.pop())
+
 
     # Reshuffles deck and clears hands and discard pile.
     def reset(self):
@@ -34,6 +38,9 @@ class Blackjack():
         self.house = []
         self.player = []
 
+    # Static functions
+
+    # Convert number between 0 and 51 into a string matching a card sprite file.
     def number_to_card(number):
         suits = {0 : "hearts", 1 : "spades", 2 : "diamonds", 3 : "clubs"}
         suit = math.floor( number / 13)

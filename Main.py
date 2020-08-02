@@ -25,6 +25,48 @@ class Application(tk.Frame):
         self.images_load()
         self.widgets_create()
 
+    def clear_board(self):
+        self.game.clear()
+
+        self.update_sprites()
+
+    def deal_cards(self):
+        self.game.clear()
+        self.game.deal()
+
+        self.update_sprites()
+
+    def images_load(self):
+        self.card_sprites = dict()
+        files = os.listdir("sprites")
+
+        for file in files:
+            image = Image.open("sprites/" + file)
+            image = image.resize((self.card_width, self.card_height), Image.ANTIALIAS)
+
+            self.card_sprites[file.replace(".png", "")] = ImageTk.PhotoImage(image)
+
+
+    def shuffle(self):
+        self.game.reset()
+        self.update_sprites()
+
+    def update_sprites(self):
+
+        num_to_card = Blackjack.number_to_card
+        len_h = len(self.game.house)
+        len_p = len(self.game.player)
+
+        house_card1 = "back"
+        house_card2 = num_to_card( self.game.house[1] ) if len_h >= 2 else "back"
+        player_card1 = num_to_card( self.game.player[0] ) if len_p >= 1 else "back"
+        player_card2 = num_to_card( self.game.player[1] ) if len_p >= 2 else "back"
+
+        self.house_hidden["image"] = self.card_sprites[house_card1]
+        self.house_vis1["image"] = self.card_sprites[house_card2]
+        self.player_c1["image"] = self.card_sprites[player_card1]
+        self.player_c2["image"] = self.card_sprites[player_card2]
+
     def widgets_create(self):
         card_padx = 5
         card_pady = 10
@@ -44,11 +86,11 @@ class Application(tk.Frame):
         # self.deck["visible"] = False
         self.deck.grid(row=0, column=0, padx=20, pady=10)
 
-        self.house_hidden = tk.Label(self.panel2)
-        # self.house_hidden["width"] = self.card_width
+        self.house_hidden = tk.Label(self.panel2, image=self.card_sprites["back"])
+        self.house_hidden["width"] = self.card_width
         self.house_hidden.grid(row=0, column=1, padx=card_padx, pady=card_pady)
 
-        self.house_vis1 = tk.Label(self.panel2)
+        self.house_vis1 = tk.Label(self.panel2, image=self.card_sprites["back"])
         self.house_vis1.grid(row=0, column=2, padx=card_padx, pady=card_pady)
 
         self.panel_split = tk.Frame(self.panel2)
@@ -56,47 +98,29 @@ class Application(tk.Frame):
         self.panel_split["bg"] = self.bg_color
         self.panel_split.grid(row=1, column=0, columnspan=3)
 
-        self.player_c1 = tk.Label(self.panel2)
+        self.player_c1 = tk.Label(self.panel2, image=self.card_sprites["back"])
         self.player_c1.grid(row=2, column=1, padx=card_padx, pady=card_pady)
 
-        self.player_c2 = tk.Label(self.panel2)
+        self.player_c2 = tk.Label(self.panel2, image=self.card_sprites["back"])
         self.player_c2.grid(row=2, column=2, padx=card_padx, pady=card_pady)
 
-        self.button1 = tk.Button(self.panel2)
-        self.button1["text"] = "Press the button!"
-        self.button1["command"] = self.deal_cards
-        self.button1.grid(row=3, column=3, sticky="nsew")
+        self.panel_buttons = tk.Frame(self.panel3)
+        self.panel_buttons.pack(side="bottom")
 
+        self.b_deal = tk.Button(self.panel_buttons)
+        self.b_deal["text"] = "Deal Cards"
+        self.b_deal["command"] = self.deal_cards
+        self.b_deal.grid(row=0, column=0, sticky="nsew")
 
-    def images_load(self):
-        self.card_sprites = dict()
-        files = os.listdir("sprites")
+        self.b_clear = tk.Button(self.panel_buttons)
+        self.b_clear["text"] = "Clear Board"
+        self.b_clear["command"] = self.clear_board
+        self.b_clear.grid(row=1, column=0, sticky="nsew")
 
-        for file in files:
-            image = Image.open("sprites/" + file)
-            image = image.resize((self.card_width, self.card_height), Image.ANTIALIAS)
-
-            self.card_sprites[file.replace(".png", "")] = ImageTk.PhotoImage(image)
-
-
-    def deal_cards(self):
-        # rand_num = rand.choice(range(0,52))
-        # card_name = Blackjack.number_to_card(rand_num)
-        # self.house_vis1["image"] = self.card_sprites[card_name]
-        self.game.clear()
-        self.game.deal()
-
-        house_card1 = "back"
-        house_card2 = Blackjack.number_to_card( self.game.house[1] )
-        player_card1 = Blackjack.number_to_card( self.game.player[0] )
-        player_card2 = Blackjack.number_to_card( self.game.player[1] )
-
-        self.house_hidden["image"] = self.card_sprites[house_card1]
-        self.house_vis1["image"] = self.card_sprites[house_card2]
-        self.player_c1["image"] = self.card_sprites[player_card1]
-        self.player_c2["image"] = self.card_sprites[player_card2]
-
-
+        self.b_shuffle = tk.Button(self.panel_buttons)
+        self.b_shuffle["text"] = "Re-Shuffle"
+        self.b_shuffle["command"] = self.shuffle
+        self.b_shuffle.grid(row=2, column=0, sticky="nsew")
 
 
 root = tk.Tk()
