@@ -25,16 +25,20 @@ class Application(tk.Frame):
         self.images_load()
         self.widgets_create()
 
-    def clear_board(self):
+    def board_clear(self):
         self.game.clear()
 
-        self.update_sprites()
+        self.sprites_update()
 
-    def deal_cards(self):
+    def board_deal(self):
         self.game.clear()
         self.game.deal()
 
-        self.update_sprites()
+        self.sprites_update()
+
+    def board_shuffle(self):
+        self.game.reset()
+        self.sprites_update()
 
     def images_load(self):
         self.card_sprites = dict()
@@ -46,12 +50,7 @@ class Application(tk.Frame):
 
             self.card_sprites[file.replace(".png", "")] = ImageTk.PhotoImage(image)
 
-
-    def shuffle(self):
-        self.game.reset()
-        self.update_sprites()
-
-    def update_sprites(self):
+    def sprites_update(self):
 
         num_to_card = Blackjack.number_to_card
         len_h = len(self.game.house)
@@ -70,56 +69,56 @@ class Application(tk.Frame):
     def widgets_create(self):
         card_padx = 5
         card_pady = 10
-        self.panel1 = tk.Frame(self)
-        self.panel1["bg"] = self.bg_color
-        self.panel1.pack(side="left", fill="both", expand=1)
+        self.f1 = tk.Frame(self)
+        self.f1["bg"] = self.bg_color
+        self.f1.pack(side="left", fill="both", expand=1)
 
-        self.panel2 = tk.Frame(self)
-        self.panel2["bg"] = self.bg_color
-        self.panel2.pack(side="left", fill="y", expand=0)
+        self.f2 = tk.Frame(self)
+        self.f2["bg"] = self.bg_color
+        self.f2.pack(side="left", fill="y", expand=0)
 
-        self.panel3 = tk.Frame(self)
-        self.panel3["bg"] = self.bg_color
-        self.panel3.pack(side="left", fill="both", expand=1)
+        self.f3 = tk.Frame(self)
+        self.f3["bg"] = self.bg_color
+        self.f3.pack(side="left", fill="both", expand=1)
 
-        self.deck = tk.Label(self.panel2, image=self.card_sprites["back"])
+        self.deck = tk.Label(self.f2, image=self.card_sprites["back"])
         # self.deck["visible"] = False
         self.deck.grid(row=0, column=0, padx=20, pady=10)
 
-        self.house_hidden = tk.Label(self.panel2, image=self.card_sprites["back"])
+        self.house_hidden = tk.Label(self.f2, image=self.card_sprites["back"])
         self.house_hidden["width"] = self.card_width
         self.house_hidden.grid(row=0, column=1, padx=card_padx, pady=card_pady)
 
-        self.house_vis1 = tk.Label(self.panel2, image=self.card_sprites["back"])
+        self.house_vis1 = tk.Label(self.f2, image=self.card_sprites["back"])
         self.house_vis1.grid(row=0, column=2, padx=card_padx, pady=card_pady)
 
-        self.panel_split = tk.Frame(self.panel2)
-        self.panel_split["height"] = 100
-        self.panel_split["bg"] = self.bg_color
-        self.panel_split.grid(row=1, column=0, columnspan=3)
+        self.f_split = tk.Frame(self.f2)
+        self.f_split["height"] = 100
+        self.f_split["bg"] = self.bg_color
+        self.f_split.grid(row=1, column=0, columnspan=3)
 
-        self.player_c1 = tk.Label(self.panel2, image=self.card_sprites["back"])
+        self.player_c1 = tk.Label(self.f2, image=self.card_sprites["back"])
         self.player_c1.grid(row=2, column=1, padx=card_padx, pady=card_pady)
 
-        self.player_c2 = tk.Label(self.panel2, image=self.card_sprites["back"])
+        self.player_c2 = tk.Label(self.f2, image=self.card_sprites["back"])
         self.player_c2.grid(row=2, column=2, padx=card_padx, pady=card_pady)
 
-        self.panel_buttons = tk.Frame(self.panel3)
-        self.panel_buttons.pack(side="bottom")
+        self.f_buttons = tk.Frame(self.f3)
+        self.f_buttons.pack(side="bottom")
 
-        self.b_deal = tk.Button(self.panel_buttons)
+        self.b_deal = tk.Button(self.f_buttons)
         self.b_deal["text"] = "Deal Cards"
-        self.b_deal["command"] = self.deal_cards
+        self.b_deal["command"] = self.board_deal
         self.b_deal.grid(row=0, column=0, sticky="nsew")
 
-        self.b_clear = tk.Button(self.panel_buttons)
+        self.b_clear = tk.Button(self.f_buttons)
         self.b_clear["text"] = "Clear Board"
-        self.b_clear["command"] = self.clear_board
+        self.b_clear["command"] = self.board_clear
         self.b_clear.grid(row=1, column=0, sticky="nsew")
 
-        self.b_shuffle = tk.Button(self.panel_buttons)
+        self.b_shuffle = tk.Button(self.f_buttons)
         self.b_shuffle["text"] = "Re-Shuffle"
-        self.b_shuffle["command"] = self.shuffle
+        self.b_shuffle["command"] = self.board_shuffle
         self.b_shuffle.grid(row=2, column=0, sticky="nsew")
 
 

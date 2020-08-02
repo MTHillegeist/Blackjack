@@ -17,7 +17,6 @@ class Blackjack():
         while(len(self.player) > 0):
             self.discard.append(self.player.pop())
 
-
     # Deal out the cards.
     def deal(self):
         print(self.deck)
@@ -26,7 +25,6 @@ class Blackjack():
 
         self.player.append(self.deck.pop())
         self.player.append(self.deck.pop())
-
 
     # Reshuffles deck and clears hands and discard pile.
     def reset(self):
