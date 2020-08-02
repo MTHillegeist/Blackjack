@@ -5,7 +5,7 @@ class Blackjack():
 
 
     def __init__(self):
-        self.decks = 1
+        self.decks = 2
 
         self.reset()
 
@@ -29,7 +29,9 @@ class Blackjack():
     # Reshuffles deck and clears hands and discard pile.
     def reset(self):
         print("Reset call")
-        self.deck = [x for x in range(0,52 * self.decks)]
+        # Cards should be in the range 0 to 51 for each value/suit.
+        # Must perform modulus operator for multiple decks.
+        self.deck = [x % 52 for x in range(0,52 * self.decks)]
         rand.shuffle(self.deck)
 
         self.discard = []

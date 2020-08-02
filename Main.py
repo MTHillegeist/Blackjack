@@ -4,9 +4,10 @@ import os
 from os import path
 import random as rand
 from blackjack import *
+from dialog_config import *
 # 500x726,0.6887
 class Application(tk.Frame):
-    """docstring for Application."""
+    """Root window for Blackjack application."""
 
     def __init__(self, master=None):
         super().__init__(master)
@@ -40,6 +41,13 @@ class Application(tk.Frame):
         self.game.reset()
         self.sprites_update()
 
+    def dialog_config(self):
+        config = DialogConfig(master=self).show()
+        self.game.decks = config["decks"]
+
+        self.game.reset()
+        self.sprites_update()
+
     def images_load(self):
         self.card_sprites = dict()
         files = os.listdir("sprites")
@@ -69,6 +77,14 @@ class Application(tk.Frame):
     def widgets_create(self):
         card_padx = 5
         card_pady = 10
+
+        self.menu = tk.Menu(self.master)
+        self.master.config(menu=self.menu)
+
+        self.filemenu = tk.Menu(self.menu, tearoff=False)
+        self.menu.add_cascade(label="File", menu=self.filemenu)
+        self.filemenu.add_command(label="Configuration", command=self.dialog_config)
+
         self.f1 = tk.Frame(self)
         self.f1["bg"] = self.bg_color
         self.f1.pack(side="left", fill="both", expand=1)
