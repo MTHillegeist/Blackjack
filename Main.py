@@ -68,26 +68,47 @@ class Application(tk.Frame):
         house_card1 = "back"
         house_card2 = num_to_card( self.game.house[1] ) if len_h >= 2 else "back"
 
-        player_hand = None
+        ph_image = None
         if len_p > 0:
-            player_hand = Image.new("RGBA", (self.card_width + (len_p-1) * 20, self.card_height))
+            ph_image = Image.new("RGBA", (self.card_width + (len_p-1) * 20, self.card_height))
 
-            for num, player_card in enumerate(self.game.player):
+            for num, card in enumerate(self.game.player):
                 print(num)
-                card_name = num_to_card(player_card)
-                player_hand.paste(self.card_sprites[card_name], (20 * num, 0 ), self.card_sprites[card_name])
+                card_name = num_to_card(card)
+                ph_image.paste(self.card_sprites[card_name], (20 * num, 0 ), self.card_sprites[card_name])
         else:
-            player_hand  = self.card_sprites["back"]
+            ph_image = None
+
+        hh_image = None
+        if len_p > 0:
+            hh_image = Image.new("RGBA", (self.card_width + (len_p-1) * 20, self.card_height))
+
+            for num, card in enumerate(self.game.house):
+                print(num)
+                card_name = None
+
+                # First dealer card is hidden.
+                if num == 0:
+                    card_name = "back"
+                else:
+                    card_name = num_to_card(card)
+
+                hh_image.paste(self.card_sprites[card_name], (20 * num, 0 ), self.card_sprites[card_name])
+        else:
+            hh_image = None
 
         Application.tk_set_image(self.deck, self.card_sprites["back"])
-        Application.tk_set_image(self.house_hidden, self.card_sprites[house_card1])
-        Application.tk_set_image(self.house_vis1, self.card_sprites[house_card2])
-        Application.tk_set_image(self.player_hand, player_hand)
+        Application.tk_set_image(self.house_hand, hh_image)
+        Application.tk_set_image(self.player_hand, ph_image)
 
     def tk_set_image(tk_object, img):
-        pimg = ImageTk.PhotoImage(img)
-        tk_object["image"] = pimg
-        tk_object.image = pimg
+        if(img == None):
+            tk_object["image"] = ""
+            tk_object.image = None
+        else:
+            pimg = ImageTk.PhotoImage(img)
+            tk_object["image"] = pimg
+            tk_object.image = pimg
 
     def widgets_create(self):
         card_padx = 5
@@ -116,11 +137,9 @@ class Application(tk.Frame):
         # self.deck["visible"] = False
         self.deck.grid(row=0, column=0, padx=20, pady=10)
 
-        self.house_hidden = tk.Label(self.f2)
-        self.house_hidden.grid(row=0, column=1, padx=card_padx, pady=card_pady)
-
-        self.house_vis1 = tk.Label(self.f2)
-        self.house_vis1.grid(row=0, column=2, padx=card_padx, pady=card_pady)
+        self.house_hand = tk.Label(self.f2)
+        self.house_hand["bg"] = self.bg_color
+        self.house_hand.grid(row=0, column=1, padx=card_padx, pady=card_pady)
 
         self.f_split = tk.Frame(self.f2)
         self.f_split["height"] = 100
