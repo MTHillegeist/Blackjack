@@ -20,8 +20,10 @@ class Application(tk.Frame):
         self.game = Blackjack()
 
         self.bg_color = "#006644"
+        self.t_color =  "#fcf403"
         self.card_width = 100
         self.card_height = 145
+        self.deck_label_len = 15
 
         self.images_load()
         self.widgets_create()
@@ -72,7 +74,8 @@ class Application(tk.Frame):
     # Update all visuals. This includes deck labels, card sprites, etc.
     def scene_update(self):
         # Update deck labels
-        self.l_deck_ct["text"] = "Decks: " + str(self.game.decks)
+        self.l_deck_ct_val["text"] = str(self.game.decks)
+        self.l_card_ct_val["text"] = str(len(self.game.deck))
 
         # Update card sprites
         num_to_card = Blackjack.number_to_card
@@ -149,10 +152,27 @@ class Application(tk.Frame):
 
         self.deck = tk.Label(self.f1)
         # self.deck["visible"] = False
-        self.deck.grid(row=0, column=0, padx=20, pady=10)
+        self.deck.grid(row=0, column=0, columnspan=2, padx=20, pady=10)
 
-        self.l_deck_ct = tk.Label(self.f1, text="Decks: " + str(self.game.decks))
-        self.l_deck_ct.grid(row=1, column=0)
+        self.l_deck_ct = tk.Label(self.f1, text="Decks: ")
+        self.l_deck_ct["fg"] = self.t_color
+        self.l_deck_ct["bg"] = self.bg_color
+        self.l_deck_ct.grid(row=1, column=0, sticky="e")
+
+        self.l_deck_ct_val = tk.Label(self.f1, text=str(self.game.decks))
+        self.l_deck_ct_val["fg"] = self.t_color
+        self.l_deck_ct_val["bg"] = self.bg_color
+        self.l_deck_ct_val.grid(row=1, column=1, sticky="w")
+
+        self.l_card_ct = tk.Label(self.f1, text="Card Count: ")
+        self.l_card_ct["fg"] = self.t_color
+        self.l_card_ct["bg"] = self.bg_color
+        self.l_card_ct.grid(row=2, column=0, sticky="e")
+
+        self.l_card_ct_val = tk.Label(self.f1, text=str(len(self.game.deck)))
+        self.l_card_ct_val["fg"] = self.t_color
+        self.l_card_ct_val["bg"] = self.bg_color
+        self.l_card_ct_val.grid(row=2, column=1, sticky="w")
 
         self.f_house = tk.Frame(self.f2)
         self.f_house["bg"] = self.bg_color
@@ -163,7 +183,6 @@ class Application(tk.Frame):
         self.house_hand.grid(row=0, column=1, padx=card_padx, pady=card_pady)
 
         self.f_split = tk.Frame(self.f2)
-        # self.f_split["height"] = 100
         self.f_split["bg"] = self.bg_color
         self.f_split.pack(side="top", fill="both", expand=1)
 
