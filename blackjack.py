@@ -26,6 +26,10 @@ class Blackjack():
         self.player.append(self.deck.pop())
         self.player.append(self.deck.pop())
 
+    # hit'
+    def hit(self):
+        self.player.append(self.deck.pop())
+
     # Reshuffles deck and clears hands and discard pile.
     def reset(self):
         print("Reset call")

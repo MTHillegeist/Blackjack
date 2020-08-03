@@ -25,29 +25,39 @@ class Application(tk.Frame):
 
         self.images_load()
         self.widgets_create()
-        self.sprites_update()
+        self.scene_update()
 
     def board_clear(self):
         self.game.clear()
+        self.b_hit["state"] = "disabled"
 
-        self.sprites_update()
+        self.scene_update()
 
     def board_deal(self):
         self.game.clear()
         self.game.deal()
+        self.b_hit["state"] = "normal"
 
-        self.sprites_update()
+        self.scene_update()
+
+    def board_hit(self):
+        self.game.hit()
+
+        self.scene_update()
 
     def board_shuffle(self):
         self.game.reset()
-        self.sprites_update()
+        self.b_hit["state"] = "disabled"
+
+        self.scene_update()
 
     def dialog_config(self):
         config = DialogConfig(master=self).show()
         self.game.decks = config["decks"]
+        self.b_hit["state"] = "disabled"
 
         self.game.reset()
-        self.sprites_update()
+        self.scene_update()
 
     def images_load(self):
         self.card_sprites = dict()
@@ -59,8 +69,12 @@ class Application(tk.Frame):
 
             self.card_sprites[file.replace(".png", "")] = image
 
-    def sprites_update(self):
+    # Update all visuals. This includes deck labels, card sprites, etc.
+    def scene_update(self):
+        # Update deck labels
+        self.l_deck_ct["text"] = "Decks: " + str(self.game.decks)
 
+        # Update card sprites
         num_to_card = Blackjack.number_to_card
         len_h = len(self.game.house)
         len_p = len(self.game.player)
@@ -68,23 +82,23 @@ class Application(tk.Frame):
         house_card1 = "back"
         house_card2 = num_to_card( self.game.house[1] ) if len_h >= 2 else "back"
 
+        # Render each player card on top of each other.
         ph_image = None
         if len_p > 0:
             ph_image = Image.new("RGBA", (self.card_width + (len_p-1) * 20, self.card_height))
 
             for num, card in enumerate(self.game.player):
-                print(num)
                 card_name = num_to_card(card)
                 ph_image.paste(self.card_sprites[card_name], (20 * num, 0 ), self.card_sprites[card_name])
         else:
             ph_image = None
 
+        # Render each dealer card on top of each other.
         hh_image = None
         if len_p > 0:
-            hh_image = Image.new("RGBA", (self.card_width + (len_p-1) * 20, self.card_height))
+            hh_image = Image.new("RGBA", (self.card_width + (len_h-1) * 20, self.card_height))
 
             for num, card in enumerate(self.game.house):
-                print(num)
                 card_name = None
 
                 # First dealer card is hidden.
@@ -123,55 +137,68 @@ class Application(tk.Frame):
 
         self.f1 = tk.Frame(self)
         self.f1["bg"] = self.bg_color
-        self.f1.pack(side="left", fill="both", expand=1)
+        self.f1.pack(side="left", fill="both", expand=0)
 
         self.f2 = tk.Frame(self)
         self.f2["bg"] = self.bg_color
-        self.f2.pack(side="left", fill="y", expand=0)
+        self.f2.pack(side="left", fill="both", expand=1)
 
         self.f3 = tk.Frame(self)
         self.f3["bg"] = self.bg_color
-        self.f3.pack(side="left", fill="both", expand=1)
+        self.f3.pack(side="right", fill="y", expand=0)
 
-        self.deck = tk.Label(self.f2)
+        self.deck = tk.Label(self.f1)
         # self.deck["visible"] = False
         self.deck.grid(row=0, column=0, padx=20, pady=10)
 
-        self.house_hand = tk.Label(self.f2)
+        self.l_deck_ct = tk.Label(self.f1, text="Decks: " + str(self.game.decks))
+        self.l_deck_ct.grid(row=1, column=0)
+
+        self.f_house = tk.Frame(self.f2)
+        self.f_house["bg"] = self.bg_color
+        self.f_house.pack(side="top")
+
+        self.house_hand = tk.Label(self.f_house)
         self.house_hand["bg"] = self.bg_color
         self.house_hand.grid(row=0, column=1, padx=card_padx, pady=card_pady)
 
         self.f_split = tk.Frame(self.f2)
-        self.f_split["height"] = 100
+        # self.f_split["height"] = 100
         self.f_split["bg"] = self.bg_color
-        self.f_split.grid(row=1, column=0, columnspan=3)
+        self.f_split.pack(side="top", fill="both", expand=1)
 
         self.f_player = tk.Frame(self.f2)
         self.f_player["bg"] = self.bg_color
-        self.f_player.grid(row=2, column=0, columnspan=3)
+        self.f_player.pack(side="top", fill="x", expand=0, padx=card_padx, pady=card_pady)
 
         self.player_hand = tk.Label(self.f_player)
         self.player_hand["bg"] = self.bg_color
-        self.player_hand.grid(row=2, column=0, columnspan=1, padx=card_padx, pady=card_pady)
+        self.player_hand.pack(side="bottom")
 
         self.f_buttons = tk.Frame(self.f3)
+        self.f_buttons["bg"] = self.bg_color
         self.f_buttons.pack(side="bottom")
+
+        self.b_hit = tk.Button(self.f_buttons)
+        self.b_hit["text"] = "Hit"
+        self.b_hit["command"] = self.board_hit
+        self.b_hit["state"] = "disabled"
+        self.b_hit.grid(row=0, column=0, sticky="nsew")
 
         self.b_deal = tk.Button(self.f_buttons)
         self.b_deal["text"] = "Deal Cards"
         self.b_deal["command"] = self.board_deal
-        self.b_deal.grid(row=0, column=0, sticky="nsew")
+        self.b_deal.grid(row=1, column=0, sticky="nsew")
 
         self.b_clear = tk.Button(self.f_buttons)
         self.b_clear["text"] = "Clear Board"
         self.b_clear["command"] = self.board_clear
-        self.b_clear.grid(row=1, column=0, sticky="nsew")
+        self.b_clear.grid(row=2, column=0, sticky="nsew")
 
         self.b_shuffle = tk.Button(self.f_buttons)
-        self.b_shuffle["text"] = "Re-Shuffle"
+        self.b_shuffle["text"] = "Shuffle"
         self.b_shuffle["command"] = self.board_shuffle
-        self.b_shuffle.grid(row=2, column=0, sticky="nsew")
-
+        self.b_shuffle.grid(row=3, column=0, sticky="nsew")
 
 
 root = tk.Tk()
