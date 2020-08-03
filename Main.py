@@ -23,7 +23,6 @@ class Application(tk.Frame):
         self.t_color =  "#fcf403"
         self.card_width = 100
         self.card_height = 145
-        self.deck_label_len = 15
 
         self.images_load()
         self.widgets_create()
@@ -105,10 +104,10 @@ class Application(tk.Frame):
                 card_name = None
 
                 # First dealer card is hidden.
-                if num == 0:
-                    card_name = "back"
-                else:
-                    card_name = num_to_card(card)
+                # if num == 0:
+                #     card_name = "back"
+                # else:
+                card_name = num_to_card(card)
 
                 hh_image.paste(self.card_sprites[card_name], (20 * num, 0 ), self.card_sprites[card_name])
         else:

@@ -19,16 +19,33 @@ class Blackjack():
 
     # Deal out the cards.
     def deal(self):
-        print(self.deck)
+        # print(self.deck)
         self.house.append(self.deck.pop())
         self.house.append(self.deck.pop())
 
         self.player.append(self.deck.pop())
         self.player.append(self.deck.pop())
 
-    # hit'
+        print(Blackjack.hand_value(self.player))
+        print(Blackjack.hand_value(self.house))
+
+    def hand_value(hand):
+        mod_hand = [min((x % 13)+1, 10) for x in hand]
+        mod_hand = [11 if x == 1 else x for x in mod_hand]
+
+        while( sum(mod_hand) > 21 and 11 in mod_hand):
+            for index, card in enumerate(mod_hand):
+                if( card == 11):
+                    mod_hand[index] = 1
+                    break;
+
+        return sum(mod_hand)
+
+    # hit
     def hit(self):
         self.player.append(self.deck.pop())
+
+        print(Blackjack.hand_value(self.player))
 
     # Reshuffles deck and clears hands and discard pile.
     def reset(self):
