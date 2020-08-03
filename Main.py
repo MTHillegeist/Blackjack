@@ -25,6 +25,7 @@ class Application(tk.Frame):
 
         self.images_load()
         self.widgets_create()
+        self.sprites_update()
 
     def board_clear(self):
         self.game.clear()
@@ -56,7 +57,7 @@ class Application(tk.Frame):
             image = Image.open("sprites/" + file)
             image = image.resize((self.card_width, self.card_height), Image.ANTIALIAS)
 
-            self.card_sprites[file.replace(".png", "")] = ImageTk.PhotoImage(image)
+            self.card_sprites[file.replace(".png", "")] = image
 
     def sprites_update(self):
 
@@ -66,13 +67,27 @@ class Application(tk.Frame):
 
         house_card1 = "back"
         house_card2 = num_to_card( self.game.house[1] ) if len_h >= 2 else "back"
-        player_card1 = num_to_card( self.game.player[0] ) if len_p >= 1 else "back"
-        player_card2 = num_to_card( self.game.player[1] ) if len_p >= 2 else "back"
 
-        self.house_hidden["image"] = self.card_sprites[house_card1]
-        self.house_vis1["image"] = self.card_sprites[house_card2]
-        self.player_c1["image"] = self.card_sprites[player_card1]
-        self.player_c2["image"] = self.card_sprites[player_card2]
+        player_hand = None
+        if len_p > 0:
+            player_hand = Image.new("RGBA", (self.card_width + (len_p-1) * 20, self.card_height))
+
+            for num, player_card in enumerate(self.game.player):
+                print(num)
+                card_name = num_to_card(player_card)
+                player_hand.paste(self.card_sprites[card_name], (20 * num, 0 ), self.card_sprites[card_name])
+        else:
+            player_hand  = self.card_sprites["back"]
+
+        Application.tk_set_image(self.deck, self.card_sprites["back"])
+        Application.tk_set_image(self.house_hidden, self.card_sprites[house_card1])
+        Application.tk_set_image(self.house_vis1, self.card_sprites[house_card2])
+        Application.tk_set_image(self.player_hand, player_hand)
+
+    def tk_set_image(tk_object, img):
+        pimg = ImageTk.PhotoImage(img)
+        tk_object["image"] = pimg
+        tk_object.image = pimg
 
     def widgets_create(self):
         card_padx = 5
@@ -97,15 +112,14 @@ class Application(tk.Frame):
         self.f3["bg"] = self.bg_color
         self.f3.pack(side="left", fill="both", expand=1)
 
-        self.deck = tk.Label(self.f2, image=self.card_sprites["back"])
+        self.deck = tk.Label(self.f2)
         # self.deck["visible"] = False
         self.deck.grid(row=0, column=0, padx=20, pady=10)
 
-        self.house_hidden = tk.Label(self.f2, image=self.card_sprites["back"])
-        self.house_hidden["width"] = self.card_width
+        self.house_hidden = tk.Label(self.f2)
         self.house_hidden.grid(row=0, column=1, padx=card_padx, pady=card_pady)
 
-        self.house_vis1 = tk.Label(self.f2, image=self.card_sprites["back"])
+        self.house_vis1 = tk.Label(self.f2)
         self.house_vis1.grid(row=0, column=2, padx=card_padx, pady=card_pady)
 
         self.f_split = tk.Frame(self.f2)
@@ -113,11 +127,13 @@ class Application(tk.Frame):
         self.f_split["bg"] = self.bg_color
         self.f_split.grid(row=1, column=0, columnspan=3)
 
-        self.player_c1 = tk.Label(self.f2, image=self.card_sprites["back"])
-        self.player_c1.grid(row=2, column=1, padx=card_padx, pady=card_pady)
+        self.f_player = tk.Frame(self.f2)
+        self.f_player["bg"] = self.bg_color
+        self.f_player.grid(row=2, column=0, columnspan=3)
 
-        self.player_c2 = tk.Label(self.f2, image=self.card_sprites["back"])
-        self.player_c2.grid(row=2, column=2, padx=card_padx, pady=card_pady)
+        self.player_hand = tk.Label(self.f_player)
+        self.player_hand["bg"] = self.bg_color
+        self.player_hand.grid(row=2, column=0, columnspan=1, padx=card_padx, pady=card_pady)
 
         self.f_buttons = tk.Frame(self.f3)
         self.f_buttons.pack(side="bottom")
@@ -136,6 +152,7 @@ class Application(tk.Frame):
         self.b_shuffle["text"] = "Re-Shuffle"
         self.b_shuffle["command"] = self.board_shuffle
         self.b_shuffle.grid(row=2, column=0, sticky="nsew")
+
 
 
 root = tk.Tk()
