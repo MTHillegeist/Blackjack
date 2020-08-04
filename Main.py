@@ -6,6 +6,7 @@ import time
 import random as rand
 from blackjack import Blackjack
 from dialog_config import DialogConfig
+import math
 # 500x726,0.6887
 class Application(tk.Frame):
     """Root window for Blackjack application."""
@@ -24,6 +25,7 @@ class Application(tk.Frame):
         self.t_color =  "#fcf403"
         self.card_width = 100
         self.card_height = 145
+        self.display_hidden_house = False
 
         self.images_load()
         self.widgets_create()
@@ -34,11 +36,13 @@ class Application(tk.Frame):
         self.b_hit["state"] = "disabled"
         self.b_hold["state"] = "disabled"
         self.l_game_result["text"] = ""
+        self.display_hidden_house = False
 
         self.scene_update()
 
     def board_deal(self):
         self.l_game_result["text"] = ""
+        self.display_hidden_house = False
 
         self.game.clear()
         result = self.game.deal()
@@ -57,14 +61,19 @@ class Application(tk.Frame):
             self.l_game_result["text"] = "Blackjack!"
             self.b_hit["state"] = "disabled"
             self.b_hold["state"] = "disabled"
+            self.display_hidden_house = True
+            self.scene_update()
             self.board_house_plays()
         elif(result == Blackjack.PlayResult.PUSH):
             self.l_game_result["text"] = "Push"
             self.b_hit["state"] = "disabled"
             self.b_hold["state"] = "disabled"
+            self.display_hidden_house = True
         elif(result == Blackjack.PlayResult.HOLD):
             self.b_hit["state"] = "disabled"
             self.b_hold["state"] = "disabled"
+            self.display_hidden_house = True
+            self.scene_update()
             self.board_house_plays()
         else: # result == CONTINUE
             self.b_hit["state"] = "normal"
@@ -88,7 +97,14 @@ class Application(tk.Frame):
         self.b_clear["state"] = "disabled"
 
         while(True):
-            time.sleep(1)
+            sleep_total = 1
+            sleep_step = 0.1
+            sleep_reps = math.floor(sleep_total / sleep_step) + 1
+
+            for _ in range(0, sleep_reps):
+                time.sleep(sleep_step)
+                self.master.update()
+
             result = self.game.house_play()
 
             if(result != Blackjack.PlayResult.CONTINUE):
@@ -168,10 +184,10 @@ class Application(tk.Frame):
                 card_name = None
 
                 # First dealer card is hidden.
-                # if num == 0:
-                #     card_name = "back"
-                # else:
-                card_name = num_to_card(card)
+                if num == 0 and self.display_hidden_house == False:
+                    card_name = "back"
+                else:
+                    card_name = num_to_card(card)
 
                 hh_image.paste(self.card_sprites[card_name], (20 * num, 0 ), self.card_sprites[card_name])
         else:
