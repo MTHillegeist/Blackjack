@@ -2,9 +2,10 @@ import tkinter as tk
 from PIL import Image, ImageTk
 import os
 from os import path
+import time
 import random as rand
-from blackjack import *
-from dialog_config import *
+from blackjack import Blackjack
+from dialog_config import DialogConfig
 # 500x726,0.6887
 class Application(tk.Frame):
     """Root window for Blackjack application."""
@@ -31,24 +32,85 @@ class Application(tk.Frame):
     def board_clear(self):
         self.game.clear()
         self.b_hit["state"] = "disabled"
+        self.b_hold["state"] = "disabled"
+        self.l_game_result["text"] = ""
 
         self.scene_update()
 
     def board_deal(self):
+        self.l_game_result["text"] = ""
+
         self.game.clear()
-        self.game.deal()
-        self.b_hit["state"] = "normal"
+        result = self.game.deal()
+
+        self.board_handle_result(result)
 
         self.scene_update()
+
+    def board_handle_result(self, result):
+        if(result == Blackjack.PlayResult.BUST):
+            self.l_game_result["text"] = "Bust!"
+            self.b_hit["state"] = "disabled"
+            self.b_hold["state"] = "disabled"
+            self.b_deal["state"] = "normal"
+        elif(result == Blackjack.PlayResult.BLACKJACK):
+            self.l_game_result["text"] = "Blackjack!"
+            self.b_hit["state"] = "disabled"
+            self.b_hold["state"] = "disabled"
+            self.board_house_plays()
+        elif(result == Blackjack.PlayResult.PUSH):
+            self.l_game_result["text"] = "Push"
+            self.b_hit["state"] = "disabled"
+            self.b_hold["state"] = "disabled"
+        elif(result == Blackjack.PlayResult.HOLD):
+            self.b_hit["state"] = "disabled"
+            self.b_hold["state"] = "disabled"
+            self.board_house_plays()
+        else: # result == CONTINUE
+            self.b_hit["state"] = "normal"
+            self.b_hold["state"] = "normal"
 
     def board_hit(self):
-        self.game.hit()
-
+        result = self.game.hit()
+        self.board_handle_result(result)
         self.scene_update()
+
+    def board_hold(self):
+        self.board_handle_result(Blackjack.PlayResult.HOLD)
+        self.scene_update()
+
+    # House plays cards till they win, lose or tie.
+    def board_house_plays(self):
+        self.b_hit["state"] = "disabled"
+        self.b_hold["state"] = "disabled"
+        self.b_deal["state"] = "disabled"
+        self.b_shuffle["state"] = "disabled"
+        self.b_clear["state"] = "disabled"
+
+        while(True):
+            time.sleep(1)
+            result = self.game.house_play()
+
+            if(result != Blackjack.PlayResult.CONTINUE):
+                if(result == Blackjack.PlayResult.WIN):
+                    self.l_game_result["text"] = "Win!"
+                elif(result == Blackjack.PlayResult.LOSS):
+                    self.l_game_result["text"] = "Loss!"
+                else: #(result == Blackjack.PlayResult.PUSH):
+                    self.l_game_result["text"] = "Push!"
+                break;
+            else:
+                self.scene_update()
+
+        self.b_deal["state"] = "normal"
+        self.b_shuffle["state"] = "normal"
+        self.b_clear["state"] = "normal"
 
     def board_shuffle(self):
         self.game.reset()
         self.b_hit["state"] = "disabled"
+        self.b_hold["state"] = "disabled"
+        self.l_game_result["text"] = ""
 
         self.scene_update()
 
@@ -56,6 +118,7 @@ class Application(tk.Frame):
         config = DialogConfig(master=self).show()
         self.game.decks = config["decks"]
         self.b_hit["state"] = "disabled"
+        self.b_hold["state"] = "disabled"
 
         self.game.reset()
         self.scene_update()
@@ -75,6 +138,7 @@ class Application(tk.Frame):
         # Update deck labels
         self.l_deck_ct_val["text"] = str(self.game.decks)
         self.l_card_ct_val["text"] = str(len(self.game.deck))
+
 
         # Update card sprites
         num_to_card = Blackjack.number_to_card
@@ -185,6 +249,12 @@ class Application(tk.Frame):
         self.f_split["bg"] = self.bg_color
         self.f_split.pack(side="top", fill="both", expand=1)
 
+        self.l_game_result = tk.Label(self.f_split)
+        self.l_game_result["bg"] = self.bg_color
+        self.l_game_result["fg"] = self.t_color
+        self.l_game_result["font"] = ("Helvetica", 30)
+        self.l_game_result.pack(fill="both", expand=1)
+
         self.f_player = tk.Frame(self.f2)
         self.f_player["bg"] = self.bg_color
         self.f_player.pack(side="top", fill="x", expand=0, padx=card_padx, pady=card_pady)
@@ -203,20 +273,26 @@ class Application(tk.Frame):
         self.b_hit["state"] = "disabled"
         self.b_hit.grid(row=0, column=0, sticky="nsew")
 
+        self.b_hold = tk.Button(self.f_buttons)
+        self.b_hold["text"] = "Hold"
+        self.b_hold["command"] = self.board_hold
+        self.b_hold["state"] = "disabled"
+        self.b_hold.grid(row=1, column=0, sticky="nsew")
+
         self.b_deal = tk.Button(self.f_buttons)
         self.b_deal["text"] = "Deal Cards"
         self.b_deal["command"] = self.board_deal
-        self.b_deal.grid(row=1, column=0, sticky="nsew")
+        self.b_deal.grid(row=2, column=0, sticky="nsew")
 
         self.b_clear = tk.Button(self.f_buttons)
         self.b_clear["text"] = "Clear Board"
         self.b_clear["command"] = self.board_clear
-        self.b_clear.grid(row=2, column=0, sticky="nsew")
+        self.b_clear.grid(row=3, column=0, sticky="nsew")
 
         self.b_shuffle = tk.Button(self.f_buttons)
         self.b_shuffle["text"] = "Shuffle"
         self.b_shuffle["command"] = self.board_shuffle
-        self.b_shuffle.grid(row=3, column=0, sticky="nsew")
+        self.b_shuffle.grid(row=4, column=0, sticky="nsew")
 
 
 root = tk.Tk()

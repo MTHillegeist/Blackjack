@@ -1,8 +1,17 @@
 import math
 import random as rand
+from enum import Enum
 
 class Blackjack():
 
+    class PlayResult(Enum):
+        CONTINUE = 0,
+        WIN = 1,
+        LOSS = 2,
+        BUST = 3,
+        PUSH = 4,
+        BLACKJACK = 5,
+        HOLD = 6
 
     def __init__(self):
         self.decks = 2
@@ -26,13 +35,25 @@ class Blackjack():
         self.player.append(self.deck.pop())
         self.player.append(self.deck.pop())
 
-        print(Blackjack.hand_value(self.player))
-        print(Blackjack.hand_value(self.house))
+        h_val = Blackjack.hand_value(self.house)
+        p_val = Blackjack.hand_value(self.player)
 
+        if(h_val == 21 and p_val == 21):
+            return Blackjack.PlayResult.PUSH
+        elif(p_val == 21):
+            return Blackjack.PlayResult.BLACKJACK
+        else:
+            return Blackjack.PlayResult.CONTINUE
+
+    # Calculate the greatest value of this hand under 21.
     def hand_value(hand):
+        # Convert card numbers that can be 0 to 51 into their blackjack values.
         mod_hand = [min((x % 13)+1, 10) for x in hand]
+        # Start by converting all aces to 11.
         mod_hand = [11 if x == 1 else x for x in mod_hand]
 
+        # If total value is greater than 21, convert aces to ones until it is
+        # less.
         while( sum(mod_hand) > 21 and 11 in mod_hand):
             for index, card in enumerate(mod_hand):
                 if( card == 11):
@@ -45,7 +66,41 @@ class Blackjack():
     def hit(self):
         self.player.append(self.deck.pop())
 
-        print(Blackjack.hand_value(self.player))
+        h_val = Blackjack.hand_value(self.house)
+        p_val = Blackjack.hand_value(self.player)
+
+        if(p_val > 21):
+            return Blackjack.PlayResult.BUST
+        elif(p_val == 21 and h_val == 21):
+            return Blackjack.PlayResult.PUSH
+        elif(p_val == 21):
+            return Blackjack.PlayResult.BLACKJACK
+        else:
+            return Blackjack.PlayResult.CONTINUE
+
+    # House plays a card.
+    def house_play(self):
+        h_val = Blackjack.hand_value(self.house)
+        p_val = Blackjack.hand_value(self.player)
+
+        print("House Val: {} Player Val: {}".format(h_val, p_val))
+
+        if(h_val > p_val):
+            return Blackjack.PlayResult.LOSS
+        elif(h_val == 21 and p_val == 21):
+            return Blackjack.PlayResult.PUSH
+
+        self.house.append(self.deck.pop())
+        h_val = Blackjack.hand_value(self.house)
+
+        if(h_val > 21):
+            return Blackjack.PlayResult.WIN
+        elif(h_val > p_val):
+            return Blackjack.PlayResult.LOSS
+        elif(h_val == 21 and p_val == 21):
+            return Blackjack.PlayResult.PUSH
+        else:
+            return Blackjack.PlayResult.CONTINUE
 
     # Reshuffles deck and clears hands and discard pile.
     def reset(self):

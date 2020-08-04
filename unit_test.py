@@ -1,4 +1,4 @@
-from blackjack import *
+from blackjack import Blackjack
 
 def hand_value_error(hand, correct, result):
     print("Incorrect hand value {} found for hand:".format( result))
