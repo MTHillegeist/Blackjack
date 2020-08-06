@@ -15,6 +15,8 @@ class Blackjack():
 
     def __init__(self):
         self.decks = 2
+        self.money = 500
+        self.bet = 10
 
         self.reset()
 
@@ -28,7 +30,6 @@ class Blackjack():
 
     # Deal out the cards.
     def deal(self):
-        # print(self.deck)
         self.house.append(self.deck.pop())
         self.house.append(self.deck.pop())
 

@@ -6,6 +6,7 @@ import time
 import random as rand
 from blackjack import Blackjack
 from dialog_config import DialogConfig
+from dialog_bet import DialogBet
 import math
 # 500x726,0.6887
 class Application(tk.Frame):
@@ -23,6 +24,7 @@ class Application(tk.Frame):
 
         self.bg_color = "#006644"
         self.t_color =  "#fcf403"
+        self.h_color = "#005634"
         self.card_width = 100
         self.card_height = 145
         self.display_hidden_house = False
@@ -43,6 +45,8 @@ class Application(tk.Frame):
     def board_deal(self):
         self.l_game_result["text"] = ""
         self.display_hidden_house = False
+        self.b_deal["state"] = "disabled"
+        self.b_change_bet.grid_remove()
 
         self.game.clear()
         result = self.game.deal()
@@ -57,6 +61,8 @@ class Application(tk.Frame):
             self.b_hit["state"] = "disabled"
             self.b_hold["state"] = "disabled"
             self.b_deal["state"] = "normal"
+            self.b_change_bet.grid()
+            self.game.money -= self.game.bet
         elif(result == Blackjack.PlayResult.BLACKJACK):
             self.l_game_result["text"] = "Blackjack!"
             self.b_hit["state"] = "disabled"
@@ -68,6 +74,8 @@ class Application(tk.Frame):
             self.l_game_result["text"] = "Push"
             self.b_hit["state"] = "disabled"
             self.b_hold["state"] = "disabled"
+            self.b_deal["state"] = "normal"
+            self.b_change_bet.grid()
             self.display_hidden_house = True
         elif(result == Blackjack.PlayResult.HOLD):
             self.b_hit["state"] = "disabled"
@@ -110,8 +118,10 @@ class Application(tk.Frame):
             if(result != Blackjack.PlayResult.CONTINUE):
                 if(result == Blackjack.PlayResult.WIN):
                     self.l_game_result["text"] = "Win!"
+                    self.game.money += self.game.bet
                 elif(result == Blackjack.PlayResult.LOSS):
                     self.l_game_result["text"] = "Loss!"
+                    self.game.money -= self.game.bet
                 else: #(result == Blackjack.PlayResult.PUSH):
                     self.l_game_result["text"] = "Push!"
                 break;
@@ -119,6 +129,7 @@ class Application(tk.Frame):
                 self.scene_update()
 
         self.b_deal["state"] = "normal"
+        self.b_change_bet.grid()
         self.b_shuffle["state"] = "normal"
         self.b_clear["state"] = "normal"
 
@@ -128,6 +139,11 @@ class Application(tk.Frame):
         self.b_hold["state"] = "disabled"
         self.l_game_result["text"] = ""
 
+        self.scene_update()
+
+    def change_bet(self):
+        bet = DialogBet(master=self).show()
+        self.game.bet = bet["bet"]
         self.scene_update()
 
     def dialog_config(self):
@@ -154,6 +170,8 @@ class Application(tk.Frame):
         # Update deck labels
         self.l_deck_ct_val["text"] = str(self.game.decks)
         self.l_card_ct_val["text"] = str(len(self.game.deck))
+        self.l_money_val["text"] = str(self.game.money)
+        self.l_bet_val["text"] = str(self.game.bet)
 
 
         # Update card sprites
@@ -252,6 +270,33 @@ class Application(tk.Frame):
         self.l_card_ct_val["fg"] = self.t_color
         self.l_card_ct_val["bg"] = self.bg_color
         self.l_card_ct_val.grid(row=2, column=1, sticky="w")
+
+        self.l_money = tk.Label(self.f1, text="Money: ")
+        self.l_money["fg"] = self.t_color
+        self.l_money["bg"] = self.bg_color
+        self.l_money.grid(row=3, column=0, sticky="e")
+
+        self.l_money_val = tk.Label(self.f1, text=str(self.game.money))
+        self.l_money_val["fg"] = self.t_color
+        self.l_money_val["bg"] = self.bg_color
+        self.l_money_val.grid(row=3, column=1, sticky="w")
+
+        self.l_bet = tk.Label(self.f1, text="Bet: ")
+        self.l_bet["fg"] = self.t_color
+        self.l_bet["bg"] = self.bg_color
+        self.l_bet.grid(row=4, column=0, sticky="e")
+
+        self.l_bet_val = tk.Label(self.f1, text=str(self.game.bet))
+        self.l_bet_val["fg"] = self.t_color
+        self.l_bet_val["bg"] = self.bg_color
+        self.l_bet_val.grid(row=4, column=1, sticky="w")
+
+        self.b_change_bet = tk.Button(self.f1, text="Change", command=self.change_bet)
+        self.b_change_bet["fg"] = self.t_color
+        self.b_change_bet["bg"] = self.bg_color
+        self.b_change_bet["activebackground"] = self.h_color
+        self.b_change_bet["activeforeground"] = self.t_color
+        self.b_change_bet.grid(row=4, column=2, sticky="w")
 
         self.f_house = tk.Frame(self.f2)
         self.f_house["bg"] = self.bg_color
