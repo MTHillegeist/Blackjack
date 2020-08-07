@@ -86,22 +86,19 @@ class Blackjack():
 
         print("House Val: {} Player Val: {}".format(h_val, p_val))
 
-        if(h_val > p_val):
-            return Blackjack.PlayResult.LOSS
-        elif(h_val == 21 and p_val == 21):
-            return Blackjack.PlayResult.PUSH
-
-        self.house.append(self.deck.pop())
-        h_val = Blackjack.hand_value(self.house)
-
-        if(h_val > 21):
-            return Blackjack.PlayResult.WIN
-        elif(h_val > p_val):
-            return Blackjack.PlayResult.LOSS
-        elif(h_val == 21 and p_val == 21):
-            return Blackjack.PlayResult.PUSH
-        else:
+        # Typically, the house will always draw if their value is less than 17.
+        # This holds true regardless of the player's hand.
+        if(h_val < 17):
+            self.house.append(self.deck.pop())
+            h_val = Blackjack.hand_value(self.house)
             return Blackjack.PlayResult.CONTINUE
+        else: #Evaluate the result.
+            if(h_val > 21 or h_val < p_val):
+                return Blackjack.PlayResult.WIN
+            elif(h_val > p_val):
+                return Blackjack.PlayResult.LOSS
+            else:# (h_val == p_val):
+                return Blackjack.PlayResult.PUSH
 
     # Reshuffles deck and clears hands and discard pile.
     def reset(self):

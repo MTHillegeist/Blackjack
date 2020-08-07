@@ -67,9 +67,17 @@ class Application(tk.Frame):
             self.l_game_result["text"] = "Blackjack!"
             self.b_hit["state"] = "disabled"
             self.b_hold["state"] = "disabled"
+            self.b_deal["state"] = "disabled"
+            self.b_shuffle["state"] = "disabled"
+            self.b_clear["state"] = "disabled"
             self.display_hidden_house = True
             self.scene_update()
             self.board_house_plays()
+
+            self.b_deal["state"] = "normal"
+            self.b_change_bet.grid()
+            self.b_shuffle["state"] = "normal"
+            self.b_clear["state"] = "normal"
         elif(result == Blackjack.PlayResult.PUSH):
             self.l_game_result["text"] = "Push"
             self.b_hit["state"] = "disabled"
@@ -80,9 +88,17 @@ class Application(tk.Frame):
         elif(result == Blackjack.PlayResult.HOLD):
             self.b_hit["state"] = "disabled"
             self.b_hold["state"] = "disabled"
+            self.b_deal["state"] = "disabled"
+            self.b_shuffle["state"] = "disabled"
+            self.b_clear["state"] = "disabled"
             self.display_hidden_house = True
             self.scene_update()
             self.board_house_plays()
+
+            self.b_deal["state"] = "normal"
+            self.b_change_bet.grid()
+            self.b_shuffle["state"] = "normal"
+            self.b_clear["state"] = "normal"
         else: # result == CONTINUE
             self.b_hit["state"] = "normal"
             self.b_hold["state"] = "normal"
@@ -98,12 +114,6 @@ class Application(tk.Frame):
 
     # House plays cards till they win, lose or tie.
     def board_house_plays(self):
-        self.b_hit["state"] = "disabled"
-        self.b_hold["state"] = "disabled"
-        self.b_deal["state"] = "disabled"
-        self.b_shuffle["state"] = "disabled"
-        self.b_clear["state"] = "disabled"
-
         while(True):
             sleep_total = 1
             sleep_step = 0.1
@@ -127,11 +137,6 @@ class Application(tk.Frame):
                 break;
             else:
                 self.scene_update()
-
-        self.b_deal["state"] = "normal"
-        self.b_change_bet.grid()
-        self.b_shuffle["state"] = "normal"
-        self.b_clear["state"] = "normal"
 
     def board_shuffle(self):
         self.game.reset()
