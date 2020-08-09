@@ -10,8 +10,7 @@ class Blackjack():
         LOSS = 2,
         BUST = 3,
         PUSH = 4,
-        BLACKJACK = 5,
-        HOLD = 6
+        BLACKJACK = 5
 
     def __init__(self):
         self.decks = 2
@@ -39,9 +38,7 @@ class Blackjack():
         h_val = Blackjack.hand_value(self.house)
         p_val = Blackjack.hand_value(self.player)
 
-        if(h_val == 21 and p_val == 21):
-            return Blackjack.PlayResult.PUSH
-        elif(p_val == 21):
+        if(p_val == 21):
             return Blackjack.PlayResult.BLACKJACK
         else:
             return Blackjack.PlayResult.CONTINUE
@@ -72,8 +69,6 @@ class Blackjack():
 
         if(p_val > 21):
             return Blackjack.PlayResult.BUST
-        elif(p_val == 21 and h_val == 21):
-            return Blackjack.PlayResult.PUSH
         elif(p_val == 21):
             return Blackjack.PlayResult.BLACKJACK
         else:
@@ -94,7 +89,10 @@ class Blackjack():
             return Blackjack.PlayResult.CONTINUE
         else: #Evaluate the result.
             if(h_val > 21 or h_val < p_val):
-                return Blackjack.PlayResult.WIN
+                if(p_val == 21):
+                    return Blackjack.PlayResult.BLACKJACK
+                else:
+                    return Blackjack.PlayResult.WIN
             elif(h_val > p_val):
                 return Blackjack.PlayResult.LOSS
             else:# (h_val == p_val):

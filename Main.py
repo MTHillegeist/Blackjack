@@ -46,74 +46,79 @@ class Application(tk.Frame):
         self.l_game_result["text"] = ""
         self.display_hidden_house = False
         self.b_deal["state"] = "disabled"
+        self.b_clear["state"] = "disabled"
         self.b_change_bet.grid_remove()
 
         self.game.clear()
         result = self.game.deal()
 
-        self.board_handle_result(result)
+        if(result == Blackjack.PlayResult.BLACKJACK):
+            result = self.board_house_plays()
+            self.board_handle_result(result)
+        else:
+            self.b_hit["state"] = "normal"
+            self.b_hold["state"] = "normal"
 
         self.scene_update()
 
     def board_handle_result(self, result):
         if(result == Blackjack.PlayResult.BUST):
-            self.l_game_result["text"] = "Bust!"
-            self.b_hit["state"] = "disabled"
-            self.b_hold["state"] = "disabled"
-            self.b_deal["state"] = "normal"
-            self.b_change_bet.grid()
             self.game.money -= self.game.bet
+            self.l_game_result["text"] = "Bust!"
         elif(result == Blackjack.PlayResult.BLACKJACK):
+            self.game.money += self.game.bet * 1.5
             self.l_game_result["text"] = "Blackjack!"
-            self.b_hit["state"] = "disabled"
-            self.b_hold["state"] = "disabled"
-            self.b_deal["state"] = "disabled"
-            self.b_shuffle["state"] = "disabled"
-            self.b_clear["state"] = "disabled"
-            self.display_hidden_house = True
-            self.scene_update()
-            self.board_house_plays()
-
-            self.b_deal["state"] = "normal"
-            self.b_change_bet.grid()
-            self.b_shuffle["state"] = "normal"
-            self.b_clear["state"] = "normal"
+        elif(result == Blackjack.PlayResult.WIN):
+            self.game.money += self.game.bet
+            self.l_game_result["text"] = "Win!"
         elif(result == Blackjack.PlayResult.PUSH):
             self.l_game_result["text"] = "Push"
-            self.b_hit["state"] = "disabled"
-            self.b_hold["state"] = "disabled"
-            self.b_deal["state"] = "normal"
-            self.b_change_bet.grid()
             self.display_hidden_house = True
-        elif(result == Blackjack.PlayResult.HOLD):
-            self.b_hit["state"] = "disabled"
-            self.b_hold["state"] = "disabled"
-            self.b_deal["state"] = "disabled"
-            self.b_shuffle["state"] = "disabled"
-            self.b_clear["state"] = "disabled"
-            self.display_hidden_house = True
-            self.scene_update()
-            self.board_house_plays()
+        elif(result == Blackjack.PlayResult.LOSS):
+            self.game.money -= self.game.bet
+            self.l_game_result["text"] = "Loss!"
+        else:
+            raise ValueError("An invalid value was passed to board_handle_result: ".format(result))
 
-            self.b_deal["state"] = "normal"
-            self.b_change_bet.grid()
-            self.b_shuffle["state"] = "normal"
-            self.b_clear["state"] = "normal"
-        else: # result == CONTINUE
-            self.b_hit["state"] = "normal"
-            self.b_hold["state"] = "normal"
+        self.b_hit["state"] = "disabled"
+        self.b_hold["state"] = "disabled"
+        self.b_deal["state"] = "normal"
+        self.b_clear["state"] = "normal"
+        self.b_shuffle["state"] = "normal"
+        self.b_change_bet.grid()
 
     def board_hit(self):
         result = self.game.hit()
-        self.board_handle_result(result)
+        # Player did not bust or hit a blackjack. It is still their turn.
+        if(result == Blackjack.PlayResult.CONTINUE):
+            pass
+        # Blackjack. Player is done and all that is left is for the house to
+        # play.
+        elif(result == Blackjack.PlayResult.BLACKJACK):
+            result = self.board_house_plays()
+            self.board_handle_result(result)
+        else: #Bust.
+            self.board_handle_result(result)
+
         self.scene_update()
 
     def board_hold(self):
-        self.board_handle_result(Blackjack.PlayResult.HOLD)
+        result = self.board_house_plays()
+
+        self.board_handle_result(result)
         self.scene_update()
 
     # House plays cards till they win, lose or tie.
+    # Also handles results in cases
     def board_house_plays(self):
+        self.b_hit["state"] = "disabled"
+        self.b_hold["state"] = "disabled"
+        self.b_deal["state"] = "disabled"
+        self.b_shuffle["state"] = "disabled"
+        self.b_clear["state"] = "disabled"
+        self.display_hidden_house = True
+        self.scene_update()
+
         while(True):
             sleep_total = 1
             sleep_step = 0.1
@@ -126,22 +131,17 @@ class Application(tk.Frame):
             result = self.game.house_play()
 
             if(result != Blackjack.PlayResult.CONTINUE):
-                if(result == Blackjack.PlayResult.WIN):
-                    self.l_game_result["text"] = "Win!"
-                    self.game.money += self.game.bet
-                elif(result == Blackjack.PlayResult.LOSS):
-                    self.l_game_result["text"] = "Loss!"
-                    self.game.money -= self.game.bet
-                else: #(result == Blackjack.PlayResult.PUSH):
-                    self.l_game_result["text"] = "Push!"
-                break;
+                return result;
             else:
                 self.scene_update()
 
+    # Reset the whole board, cards, and buttons.
     def board_shuffle(self):
         self.game.reset()
         self.b_hit["state"] = "disabled"
         self.b_hold["state"] = "disabled"
+        self.b_deal["state"] = "normal"
+        self.b_clear["state"] = "normal"
         self.l_game_result["text"] = ""
 
         self.scene_update()
