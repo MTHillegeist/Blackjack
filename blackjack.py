@@ -10,12 +10,14 @@ class Blackjack():
         LOSS = 2,
         BUST = 3,
         PUSH = 4,
-        BLACKJACK = 5
+        BLACKJACK = 5,
+        TWENTYONE = 6
 
     def __init__(self):
         self.decks = 2
         self.money = 500
         self.bet = 10
+        self.double = False
 
         self.reset()
 
@@ -26,6 +28,8 @@ class Blackjack():
 
         while(len(self.player) > 0):
             self.discard.append(self.player.pop())
+
+        self.double = False
 
     # Deal out the cards.
     def deal(self):
@@ -70,7 +74,7 @@ class Blackjack():
         if(p_val > 21):
             return Blackjack.PlayResult.BUST
         elif(p_val == 21):
-            return Blackjack.PlayResult.BLACKJACK
+            return Blackjack.PlayResult.TWENTYONE
         else:
             return Blackjack.PlayResult.CONTINUE
 
@@ -89,7 +93,7 @@ class Blackjack():
             return Blackjack.PlayResult.CONTINUE
         else: #Evaluate the result.
             if(h_val > 21 or h_val < p_val):
-                if(p_val == 21):
+                if(p_val == 21 and len(self.player) == 2):
                     return Blackjack.PlayResult.BLACKJACK
                 else:
                     return Blackjack.PlayResult.WIN

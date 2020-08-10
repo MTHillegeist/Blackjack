@@ -8,7 +8,8 @@ from blackjack import Blackjack
 from dialog_config import DialogConfig
 from dialog_bet import DialogBet
 import math
-# 500x726,0.6887
+
+
 class Application(tk.Frame):
     """Root window for Blackjack application."""
 
@@ -36,6 +37,7 @@ class Application(tk.Frame):
     def board_clear(self):
         self.game.clear()
         self.b_hit["state"] = "disabled"
+        self.b_double["state"] = "disabled"
         self.b_hold["state"] = "disabled"
         self.l_game_result["text"] = ""
         self.display_hidden_house = False
@@ -57,30 +59,47 @@ class Application(tk.Frame):
             self.board_handle_result(result)
         else:
             self.b_hit["state"] = "normal"
+            self.b_double["state"] = "normal"
             self.b_hold["state"] = "normal"
 
         self.scene_update()
 
+    def board_double(self):
+        self.game.double = True
+
+        result = self.game.hit()
+
+        if(result == Blackjack.PlayResult.CONTINUE or result == Blackjack.PlayResult.TWENTYONE):
+            result = self.board_house_plays()
+            self.board_handle_result(result)
+        else:
+            self.board_handle_result(result)
+
+        self.scene_update()
+
     def board_handle_result(self, result):
+        double_ratio = 2 if self.game.double else 1
+
         if(result == Blackjack.PlayResult.BUST):
-            self.game.money -= self.game.bet
+            self.game.money -= double_ratio * self.game.bet
             self.l_game_result["text"] = "Bust!"
         elif(result == Blackjack.PlayResult.BLACKJACK):
-            self.game.money += self.game.bet * 1.5
+            self.game.money += int( self.game.bet * 1.5)
             self.l_game_result["text"] = "Blackjack!"
         elif(result == Blackjack.PlayResult.WIN):
-            self.game.money += self.game.bet
+            self.game.money += double_ratio * self.game.bet
             self.l_game_result["text"] = "Win!"
         elif(result == Blackjack.PlayResult.PUSH):
             self.l_game_result["text"] = "Push"
             self.display_hidden_house = True
         elif(result == Blackjack.PlayResult.LOSS):
-            self.game.money -= self.game.bet
+            self.game.money -= double_ratio * self.game.bet
             self.l_game_result["text"] = "Loss!"
         else:
             raise ValueError("An invalid value was passed to board_handle_result: ".format(result))
 
         self.b_hit["state"] = "disabled"
+        self.b_double["state"] = "disabled"
         self.b_hold["state"] = "disabled"
         self.b_deal["state"] = "normal"
         self.b_clear["state"] = "normal"
@@ -92,9 +111,9 @@ class Application(tk.Frame):
         # Player did not bust or hit a blackjack. It is still their turn.
         if(result == Blackjack.PlayResult.CONTINUE):
             pass
-        # Blackjack. Player is done and all that is left is for the house to
-        # play.
-        elif(result == Blackjack.PlayResult.BLACKJACK):
+        # 21. Player is done and all that is left is for the house to play.
+        # Technically, this is not actually Blackjack because they hit once.
+        elif(result == Blackjack.PlayResult.TWENTYONE):
             result = self.board_house_plays()
             self.board_handle_result(result)
         else: #Bust.
@@ -112,6 +131,7 @@ class Application(tk.Frame):
     # Also handles results in cases
     def board_house_plays(self):
         self.b_hit["state"] = "disabled"
+        self.b_double["state"] = "disabled"
         self.b_hold["state"] = "disabled"
         self.b_deal["state"] = "disabled"
         self.b_shuffle["state"] = "disabled"
@@ -139,6 +159,7 @@ class Application(tk.Frame):
     def board_shuffle(self):
         self.game.reset()
         self.b_hit["state"] = "disabled"
+        self.b_double["state"] = "disabled"
         self.b_hold["state"] = "disabled"
         self.b_deal["state"] = "normal"
         self.b_clear["state"] = "normal"
@@ -339,26 +360,32 @@ class Application(tk.Frame):
         self.b_hit["state"] = "disabled"
         self.b_hit.grid(row=0, column=0, sticky="nsew")
 
+        self.b_double = tk.Button(self.f_buttons)
+        self.b_double["text"] = "Double"
+        self.b_double["command"] = self.board_double
+        self.b_double["state"] = "disabled"
+        self.b_double.grid(row=1, column=0, sticky="nsew")
+
         self.b_hold = tk.Button(self.f_buttons)
         self.b_hold["text"] = "Hold"
         self.b_hold["command"] = self.board_hold
         self.b_hold["state"] = "disabled"
-        self.b_hold.grid(row=1, column=0, sticky="nsew")
+        self.b_hold.grid(row=2, column=0, sticky="nsew")
 
         self.b_deal = tk.Button(self.f_buttons)
         self.b_deal["text"] = "Deal Cards"
         self.b_deal["command"] = self.board_deal
-        self.b_deal.grid(row=2, column=0, sticky="nsew")
+        self.b_deal.grid(row=3, column=0, sticky="nsew")
 
         self.b_clear = tk.Button(self.f_buttons)
         self.b_clear["text"] = "Clear Board"
         self.b_clear["command"] = self.board_clear
-        self.b_clear.grid(row=3, column=0, sticky="nsew")
+        self.b_clear.grid(row=4, column=0, sticky="nsew")
 
         self.b_shuffle = tk.Button(self.f_buttons)
         self.b_shuffle["text"] = "Shuffle"
         self.b_shuffle["command"] = self.board_shuffle
-        self.b_shuffle.grid(row=4, column=0, sticky="nsew")
+        self.b_shuffle.grid(row=5, column=0, sticky="nsew")
 
 
 root = tk.Tk()
