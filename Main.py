@@ -203,28 +203,29 @@ class Application(tk.Frame):
         # Update card sprites
         num_to_card = Blackjack.number_to_card
         len_h = len(self.game.house)
-        if(self.game.player != None):
-            len_p = len(self.game.player)
-        else:
-            len_p = 0
+        len_phs = len(self.game.player_hands)
 
         house_card1 = "back"
         house_card2 = num_to_card( self.game.house[1] ) if len_h >= 2 else "back"
 
         # Render each player card on top of each other.
-        ph_image = None
-        if len_p > 0:
+        ph_images = []
+        for player_hand in self.game.player_hands:
+            len_p = len(player_hand)
             ph_image = Image.new("RGBA", (self.card_width + (len_p-1) * 20, self.card_height))
 
             for num, card in enumerate(self.game.player):
                 card_name = num_to_card(card)
                 ph_image.paste(self.card_sprites[card_name], (20 * num, 0 ), self.card_sprites[card_name])
-        else:
-            ph_image = None
+
+            ph_images.append(ph_image)
+
+        print("ph_images length: {}".format(len(ph_images)))
+
 
         # Render each dealer card on top of each other.
         hh_image = None
-        if len_p > 0:
+        if len_h > 0:
             hh_image = Image.new("RGBA", (self.card_width + (len_h-1) * 20, self.card_height))
 
             for num, card in enumerate(self.game.house):
@@ -242,7 +243,10 @@ class Application(tk.Frame):
 
         Application.tk_set_image(self.deck, self.card_sprites["back"])
         Application.tk_set_image(self.house_hand, hh_image)
-        Application.tk_set_image(self.player_hand, ph_image)
+
+        for index, ph_image in enumerate(ph_images):
+            Application.tk_set_image(self.l_player_hands[index], ph_image)
+
 
     def tk_set_image(tk_object, img):
         if(img == None):
@@ -349,9 +353,27 @@ class Application(tk.Frame):
         self.f_player["bg"] = self.bg_color
         self.f_player.pack(side="top", fill="x", expand=0, padx=card_padx, pady=card_pady)
 
-        self.player_hand = tk.Label(self.f_player)
-        self.player_hand["bg"] = self.bg_color
-        self.player_hand.pack(side="bottom")
+        self.l_player_hands = []
+
+        l_player_hand0 = tk.Label(self.f_player)
+        l_player_hand0["bg"] = self.bg_color
+        l_player_hand0.pack(side="bottom")
+        self.l_player_hands.append(l_player_hand0)
+
+        l_player_hand1 = tk.Label(self.f_player)
+        l_player_hand1["bg"] = self.bg_color
+        l_player_hand1.pack(side="bottom")
+        self.l_player_hands.append(l_player_hand1)
+
+        l_player_hand2 = tk.Label(self.f_player)
+        l_player_hand2["bg"] = self.bg_color
+        l_player_hand2.pack(side="bottom")
+        self.l_player_hands.append(l_player_hand2)
+
+        l_player_hand3 = tk.Label(self.f_player)
+        l_player_hand3["bg"] = self.bg_color
+        l_player_hand3.pack(side="bottom")
+        self.l_player_hands.append(l_player_hand3)
 
         self.f_buttons = tk.Frame(self.f3)
         self.f_buttons["bg"] = self.bg_color
