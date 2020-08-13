@@ -26,8 +26,11 @@ class Blackjack():
         while(len(self.house) > 0):
             self.discard.append(self.house.pop())
 
-        while(len(self.player) > 0):
-            self.discard.append(self.player.pop())
+        while(len(self.player_hands) > 0):
+            self.player = self.player_hands.pop()
+            while(len(self.player) > 0):
+                self.discard.append(self.player.pop())
+        self.player = None
 
         self.double = False
 
@@ -36,6 +39,9 @@ class Blackjack():
         self.house.append(self.deck.pop())
         self.house.append(self.deck.pop())
 
+        self.player_hands.append([])
+
+        self.player = self.player_hands[0]
         self.player.append(self.deck.pop())
         self.player.append(self.deck.pop())
 
@@ -102,6 +108,10 @@ class Blackjack():
             else:# (h_val == p_val):
                 return Blackjack.PlayResult.PUSH
 
+    #
+    def next_split(self):
+        raise NotImplementedError("next_split has not been implemented yet.")
+
     # Reshuffles deck and clears hands and discard pile.
     def reset(self):
         print("Reset call")
@@ -110,9 +120,22 @@ class Blackjack():
         self.deck = [x % 52 for x in range(0,52 * self.decks)]
         rand.shuffle(self.deck)
 
+        # Indicator for which player hand  is in play (splits.)
+        self.current_hand = 0
+
         self.discard = []
         self.house = []
-        self.player = []
+        self.player_hands = []
+        # self.player will be the hand currently in play.
+        # Set on deal.
+        self.player = None
+
+    # Split current hand into two hands and draw a card for each.
+    # Only works if the current hand has exactly two of the same cards
+    # and this is not the fourth hand (after three splits.)
+    def split(self):
+        raise NotImplementedError("split has not been implemented yet.")
+
 
     # Static functions
 

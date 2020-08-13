@@ -203,7 +203,10 @@ class Application(tk.Frame):
         # Update card sprites
         num_to_card = Blackjack.number_to_card
         len_h = len(self.game.house)
-        len_p = len(self.game.player)
+        if(self.game.player != None):
+            len_p = len(self.game.player)
+        else:
+            len_p = 0
 
         house_card1 = "back"
         house_card2 = num_to_card( self.game.house[1] ) if len_h >= 2 else "back"
