@@ -61,6 +61,7 @@ class Application(tk.Frame):
             self.b_hit["state"] = "normal"
             self.b_double["state"] = "normal"
             self.b_hold["state"] = "normal"
+            self.b_split["state"] = "normal"
 
         self.scene_update()
 
@@ -167,6 +168,13 @@ class Application(tk.Frame):
 
         self.scene_update()
 
+
+    def board_split(self):
+        self.game.split()
+
+        self.scene_update()
+
+
     def change_bet(self):
         bet = DialogBet(master=self).show()
         self.game.bet = bet["bet"]
@@ -199,7 +207,6 @@ class Application(tk.Frame):
         self.l_money_val["text"] = str(self.game.money)
         self.l_bet_val["text"] = str(self.game.bet)
 
-
         # Update card sprites
         num_to_card = Blackjack.number_to_card
         len_h = len(self.game.house)
@@ -208,20 +215,23 @@ class Application(tk.Frame):
         house_card1 = "back"
         house_card2 = num_to_card( self.game.house[1] ) if len_h >= 2 else "back"
 
+        # # DEBUG:
+        # for index, hand in enumerate(self.game.player_hands):
+        #     print("Player hand {0}: {1}".format(index, hand))
+        # print(self.game.player_hands)
+        # print(self.game.player)
+
         # Render each player card on top of each other.
         ph_images = []
-        for player_hand in self.game.player_hands:
-            len_p = len(player_hand)
+        for hand in self.game.player_hands:
+            len_p = len(hand)
             ph_image = Image.new("RGBA", (self.card_width + (len_p-1) * 20, self.card_height))
 
-            for num, card in enumerate(self.game.player):
+            for num, card in enumerate(hand):
                 card_name = num_to_card(card)
                 ph_image.paste(self.card_sprites[card_name], (20 * num, 0 ), self.card_sprites[card_name])
 
             ph_images.append(ph_image)
-
-        print("ph_images length: {}".format(len(ph_images)))
-
 
         # Render each dealer card on top of each other.
         hh_image = None
@@ -357,22 +367,22 @@ class Application(tk.Frame):
 
         l_player_hand0 = tk.Label(self.f_player)
         l_player_hand0["bg"] = self.bg_color
-        l_player_hand0.pack(side="bottom")
+        l_player_hand0.pack(side="left")
         self.l_player_hands.append(l_player_hand0)
 
         l_player_hand1 = tk.Label(self.f_player)
         l_player_hand1["bg"] = self.bg_color
-        l_player_hand1.pack(side="bottom")
+        l_player_hand1.pack(side="left")
         self.l_player_hands.append(l_player_hand1)
 
         l_player_hand2 = tk.Label(self.f_player)
         l_player_hand2["bg"] = self.bg_color
-        l_player_hand2.pack(side="bottom")
+        l_player_hand2.pack(side="left")
         self.l_player_hands.append(l_player_hand2)
 
         l_player_hand3 = tk.Label(self.f_player)
         l_player_hand3["bg"] = self.bg_color
-        l_player_hand3.pack(side="bottom")
+        l_player_hand3.pack(side="left")
         self.l_player_hands.append(l_player_hand3)
 
         self.f_buttons = tk.Frame(self.f3)
@@ -391,26 +401,32 @@ class Application(tk.Frame):
         self.b_double["state"] = "disabled"
         self.b_double.grid(row=1, column=0, sticky="nsew")
 
+        self.b_split = tk.Button(self.f_buttons)
+        self.b_split["text"] = "Split"
+        self.b_split["command"] = self.board_split
+        self.b_split["state"] = "disabled"
+        self.b_split.grid(row=2, column=0, sticky="nsew")
+
         self.b_hold = tk.Button(self.f_buttons)
         self.b_hold["text"] = "Hold"
         self.b_hold["command"] = self.board_hold
         self.b_hold["state"] = "disabled"
-        self.b_hold.grid(row=2, column=0, sticky="nsew")
+        self.b_hold.grid(row=3, column=0, sticky="nsew")
 
         self.b_deal = tk.Button(self.f_buttons)
         self.b_deal["text"] = "Deal Cards"
         self.b_deal["command"] = self.board_deal
-        self.b_deal.grid(row=3, column=0, sticky="nsew")
+        self.b_deal.grid(row=4, column=0, sticky="nsew")
 
         self.b_clear = tk.Button(self.f_buttons)
         self.b_clear["text"] = "Clear Board"
         self.b_clear["command"] = self.board_clear
-        self.b_clear.grid(row=4, column=0, sticky="nsew")
+        self.b_clear.grid(row=5, column=0, sticky="nsew")
 
         self.b_shuffle = tk.Button(self.f_buttons)
         self.b_shuffle["text"] = "Shuffle"
         self.b_shuffle["command"] = self.board_shuffle
-        self.b_shuffle.grid(row=5, column=0, sticky="nsew")
+        self.b_shuffle.grid(row=6, column=0, sticky="nsew")
 
 
 root = tk.Tk()

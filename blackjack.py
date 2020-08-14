@@ -134,7 +134,22 @@ class Blackjack():
     # Only works if the current hand has exactly two of the same cards
     # and this is not the fourth hand (after three splits.)
     def split(self):
-        raise NotImplementedError("split has not been implemented yet.")
+        if(len(self.player_hands) == 4):
+            raise ValueError("Attempt to call split function when their are" +
+                             " already 4 splits on table.")
+        # Create a new hand and take the top card from the current hand.
+        new_hand = [self.player.pop()]
+        # Add a new card to each of the splits.
+        self.player.append(self.deck.pop())
+        new_hand.append(self.deck.pop())
+        # Add the new hand to the list of hands.
+        self.player_hands.append(new_hand)
+        # Make the new hand the current hand. It will be played first.
+        self.player = new_hand
+        # 
+        # print(self.player_hands)
+        # print(new_hand)
+        # print(self.player)
 
 
     # Static functions
