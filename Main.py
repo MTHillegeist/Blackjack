@@ -1,5 +1,5 @@
 import tkinter as tk
-from PIL import Image, ImageTk
+from PIL import Image, ImageTk, ImageEnhance
 import os
 from os import path
 import time
@@ -71,8 +71,12 @@ class Application(tk.Frame):
         result = self.game.hit()
 
         if(result == Blackjack.PlayResult.CONTINUE or result == Blackjack.PlayResult.TWENTYONE):
-            result = self.board_house_plays()
-            self.board_handle_result(result)
+            hand_ind = self.game.player_hands.index(self.game.player)
+            if(hand_ind == 0):
+                result = self.board_house_plays()
+                self.board_handle_result(result)
+            else:
+                self.game.next_split()
         else:
             self.board_handle_result(result)
 
@@ -115,17 +119,26 @@ class Application(tk.Frame):
         # 21. Player is done and all that is left is for the house to play.
         # Technically, this is not actually Blackjack because they hit once.
         elif(result == Blackjack.PlayResult.TWENTYONE):
-            result = self.board_house_plays()
-            self.board_handle_result(result)
+            hand_ind = self.game.player_hands.index(self.game.player)
+            if(hand_ind == 0):
+                result = self.board_house_plays()
+                self.board_handle_result(result)
+            else:
+                self.game.next_split()
         else: #Bust.
             self.board_handle_result(result)
 
         self.scene_update()
 
     def board_hold(self):
-        result = self.board_house_plays()
 
-        self.board_handle_result(result)
+        hand_ind = self.game.player_hands.index(self.game.player)
+        if(hand_ind == 0):
+            result = self.board_house_plays()
+            self.board_handle_result(result)
+        else:
+            self.game.next_split()
+
         self.scene_update()
 
     # House plays cards till they win, lose or tie.
@@ -231,7 +244,20 @@ class Application(tk.Frame):
                 card_name = num_to_card(card)
                 ph_image.paste(self.card_sprites[card_name], (20 * num, 0 ), self.card_sprites[card_name])
 
+            if(hand != self.game.player):
+                enhancer = ImageEnhance.Brightness(ph_image)
+                ph_image = enhancer.enhance(0.5)
+
             ph_images.append(ph_image)
+
+        # We have to add to append None until we hit 4, since there are 4
+        # labels. If there are no cards for the label to display, None must be
+        # passed through to get rid of any existing image.
+        while len(ph_images) < self.game.max_splits:
+            ph_images.append(None)
+
+        for index, ph_image in enumerate(ph_images):
+            Application.tk_set_image(self.l_player_hands[index], ph_image)
 
         # Render each dealer card on top of each other.
         hh_image = None
@@ -254,8 +280,7 @@ class Application(tk.Frame):
         Application.tk_set_image(self.deck, self.card_sprites["back"])
         Application.tk_set_image(self.house_hand, hh_image)
 
-        for index, ph_image in enumerate(ph_images):
-            Application.tk_set_image(self.l_player_hands[index], ph_image)
+
 
 
     def tk_set_image(tk_object, img):

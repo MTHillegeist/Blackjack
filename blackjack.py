@@ -18,6 +18,7 @@ class Blackjack():
         self.money = 500
         self.bet = 10
         self.double = False
+        self.max_splits = 4
 
         self.reset()
 
@@ -108,9 +109,13 @@ class Blackjack():
             else:# (h_val == p_val):
                 return Blackjack.PlayResult.PUSH
 
-    #
+    # Should be called after a hand is done being played. Moves to the next_split
+    # hand in line.
     def next_split(self):
-        raise NotImplementedError("next_split has not been implemented yet.")
+        curr_index = self.player_hands.index(self.player)
+        if(curr_index == 0):
+            raise ValueError("Attempt to move to next hand when at hand 0.")
+        self.player = self.player_hands[curr_index - 1]
 
     # Reshuffles deck and clears hands and discard pile.
     def reset(self):
@@ -134,7 +139,7 @@ class Blackjack():
     # Only works if the current hand has exactly two of the same cards
     # and this is not the fourth hand (after three splits.)
     def split(self):
-        if(len(self.player_hands) == 4):
+        if(len(self.player_hands) == self.max_splits):
             raise ValueError("Attempt to call split function when their are" +
                              " already 4 splits on table.")
         # Create a new hand and take the top card from the current hand.
@@ -146,10 +151,6 @@ class Blackjack():
         self.player_hands.append(new_hand)
         # Make the new hand the current hand. It will be played first.
         self.player = new_hand
-        # 
-        # print(self.player_hands)
-        # print(new_hand)
-        # print(self.player)
 
 
     # Static functions
