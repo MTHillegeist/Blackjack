@@ -57,6 +57,38 @@ class Blackjack():
         else:
             return Blackjack.PlayResult.CONTINUE
 
+    # Gets a tuple including the final result of a hand and the total won/lost.
+    # Should only be called after the house is done playing.
+    def get_final_result(self, hand_index):
+        hand = self.player_hands[hand_index]
+        h_val = Blackjack.hand_value(self.house)
+        p_val = Blackjack.hand_value(hand)
+        double_ratio = 2 if hand.double else 1
+        result = None
+        net_money = None
+
+        if(p_val > 21):
+            result = Blackjack.PlayResult.BUST
+            net_money = double_ratio * self.game.bet
+        elif(p_val == 21 and len(hand) == 2 and h_val != 21):
+            result = Blackjack.PlayResult.BLACKJACK
+            net_money = int(self.game.bet * 1.5)
+        elif(h_val > 21 or p_val > h_val):
+            result = Blackjack.PlayResult.WIN
+            net_money = double_ratio * self.game.bet
+        elif(h_val == p_val):
+            result = Blackjack.PlayResult.PUSH
+            net_money = 0
+        elif(h_val >= p_val):
+            result = Blackjack.PlayResult.LOSS
+            net_money = -1 * double_ratio * self.game.bet
+        else:
+            raise ValueError("Invalid branch reached in get_final_result.\n" +
+                             "House: {} \n".format(self.house) +
+                             "Player Hand Index, Cards: {0},{1}\n"
+                             .format(hand_index, hand))
+                             
+
     # Calculate the greatest value of this hand under 21.
     def hand_value(hand):
         # Convert card numbers that can be 0 to 51 into their blackjack values.
