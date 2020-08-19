@@ -13,11 +13,15 @@ class Blackjack():
         BLACKJACK = 5,
         TWENTYONE = 6
 
+    class PlayerHand:
+        def __init__(self):
+            self.cards = []
+            self.double = False
+
     def __init__(self):
         self.decks = 2
         self.money = 500
         self.bet = 10
-        self.double = False
         self.max_splits = 4
 
         self.reset()
@@ -29,25 +33,24 @@ class Blackjack():
 
         while(len(self.player_hands) > 0):
             self.player = self.player_hands.pop()
-            while(len(self.player) > 0):
-                self.discard.append(self.player.pop())
+            while(len(self.player.cards) > 0):
+                self.discard.append(self.player.cards.pop())
         self.player = None
 
-        self.double = False
 
     # Deal out the cards.
     def deal(self):
         self.house.append(self.deck.pop())
         self.house.append(self.deck.pop())
 
-        self.player_hands.append([])
+        self.player_hands.append(Blackjack.PlayerHand())
 
         self.player = self.player_hands[0]
-        self.player.append(self.deck.pop())
-        self.player.append(self.deck.pop())
+        self.player.cards.append(self.deck.pop())
+        self.player.cards.append(self.deck.pop())
 
         h_val = Blackjack.hand_value(self.house)
-        p_val = Blackjack.hand_value(self.player)
+        p_val = Blackjack.hand_value(self.player.cards)
 
         if(p_val == 21):
             return Blackjack.PlayResult.BLACKJACK
@@ -73,10 +76,10 @@ class Blackjack():
 
     # hit
     def hit(self):
-        self.player.append(self.deck.pop())
+        self.player.cards.append(self.deck.pop())
 
         h_val = Blackjack.hand_value(self.house)
-        p_val = Blackjack.hand_value(self.player)
+        p_val = Blackjack.hand_value(self.player.cards)
 
         if(p_val > 21):
             return Blackjack.PlayResult.BUST
@@ -88,7 +91,7 @@ class Blackjack():
     # House plays a card.
     def house_play(self):
         h_val = Blackjack.hand_value(self.house)
-        p_val = Blackjack.hand_value(self.player)
+        p_val = Blackjack.hand_value(self.player.cards)
 
         print("House Val: {} Player Val: {}".format(h_val, p_val))
 
@@ -100,7 +103,7 @@ class Blackjack():
             return Blackjack.PlayResult.CONTINUE
         else: #Evaluate the result.
             if(h_val > 21 or h_val < p_val):
-                if(p_val == 21 and len(self.player) == 2):
+                if(p_val == 21 and len(self.player.cards) == 2):
                     return Blackjack.PlayResult.BLACKJACK
                 else:
                     return Blackjack.PlayResult.WIN
@@ -143,10 +146,11 @@ class Blackjack():
             raise ValueError("Attempt to call split function when their are" +
                              " already 4 splits on table.")
         # Create a new hand and take the top card from the current hand.
-        new_hand = [self.player.pop()]
+        new_hand = Blackjack.PlayerHand()
+        new_hand.cards.append( self.player.cards.pop() )
         # Add a new card to each of the splits.
-        self.player.append(self.deck.pop())
-        new_hand.append(self.deck.pop())
+        self.player.cards.append(self.deck.pop())
+        new_hand.cards.append(self.deck.pop())
         # Add the new hand to the list of hands.
         self.player_hands.append(new_hand)
         # Make the new hand the current hand. It will be played first.

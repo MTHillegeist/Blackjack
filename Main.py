@@ -66,7 +66,7 @@ class Application(tk.Frame):
         self.scene_update()
 
     def board_double(self):
-        self.game.double = True
+        self.game.player.double = True
 
         result = self.game.hit()
 
@@ -83,7 +83,7 @@ class Application(tk.Frame):
         self.scene_update()
 
     def board_handle_result(self, result):
-        double_ratio = 2 if self.game.double else 1
+        double_ratio = 2 if self.game.player.double else 1
 
         if(result == Blackjack.PlayResult.BUST):
             self.game.money -= double_ratio * self.game.bet
@@ -237,10 +237,10 @@ class Application(tk.Frame):
         # Render each player card on top of each other.
         ph_images = []
         for hand in self.game.player_hands:
-            len_p = len(hand)
+            len_p = len(hand.cards)
             ph_image = Image.new("RGBA", (self.card_width + (len_p-1) * 20, self.card_height))
 
-            for num, card in enumerate(hand):
+            for num, card in enumerate(hand.cards):
                 card_name = num_to_card(card)
                 ph_image.paste(self.card_sprites[card_name], (20 * num, 0 ), self.card_sprites[card_name])
 
