@@ -4,6 +4,25 @@ from blackjack import Blackjack
 class TestBlackjack(unittest.TestCase):
     """docstring for TestBlackjack."""
 
+    def test_get_final_result_basic(self):
+        blackjack = Blackjack()
+        blackjack.bet = 10
+
+        blackjack.spec_player_add_hand([0,9]) # A, 10: 21
+        blackjack.spec_house_set_hand([9, 4]) # 10, 5: 15
+        result, net_money = blackjack.get_final_result(0)
+        self.assertEqual(result, Blackjack.PlayResult.BLACKJACK)
+        self.assertEqual(net_money, 15)
+
+        blackjack.clear()
+
+        blackjack.spec_player_add_hand([4,9]) # 15
+        blackjack.spec_house_set_hand([9, 9]) # 20
+        result, net_money = blackjack.get_final_result(0)
+        self.assertEqual(result, Blackjack.PlayResult.LOSS)
+        self.assertEqual(net_money, -10)
+
+# Static Function Tests
     def test_hand_value(self):
         errors = 0
         tests = [([9, 9], 20),
@@ -19,10 +38,5 @@ class TestBlackjack(unittest.TestCase):
             result = Blackjack.hand_value(hand)
             self.assertEqual(result, correct)
 
-    # def __init__(self, arg):
-    #     super(TestBlackjack, self).__init__()
-    #     self.arg = arg
-
-# hand_value_tests()
 if __name__ == '__main__':
     unittest.main()

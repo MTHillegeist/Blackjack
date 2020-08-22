@@ -18,6 +18,10 @@ class Blackjack():
             self.cards = []
             self.double = False
 
+        def __init__(self, hand):
+            self.cards = hand
+            self.double = False
+
     def __init__(self):
         self.decks = 2
         self.money = 500
@@ -62,32 +66,34 @@ class Blackjack():
     def get_final_result(self, hand_index):
         hand = self.player_hands[hand_index]
         h_val = Blackjack.hand_value(self.house)
-        p_val = Blackjack.hand_value(hand)
+        p_val = Blackjack.hand_value(hand.cards)
         double_ratio = 2 if hand.double else 1
         result = None
         net_money = None
 
         if(p_val > 21):
             result = Blackjack.PlayResult.BUST
-            net_money = double_ratio * self.game.bet
-        elif(p_val == 21 and len(hand) == 2 and h_val != 21):
+            net_money = double_ratio * self.bet
+        elif(p_val == 21 and len(hand.cards) == 2 and h_val != 21):
             result = Blackjack.PlayResult.BLACKJACK
-            net_money = int(self.game.bet * 1.5)
+            net_money = int(self.bet * 1.5)
         elif(h_val > 21 or p_val > h_val):
             result = Blackjack.PlayResult.WIN
-            net_money = double_ratio * self.game.bet
+            net_money = double_ratio * self.bet
         elif(h_val == p_val):
             result = Blackjack.PlayResult.PUSH
             net_money = 0
         elif(h_val >= p_val):
             result = Blackjack.PlayResult.LOSS
-            net_money = -1 * double_ratio * self.game.bet
+            net_money = -1 * double_ratio * self.bet
         else:
             raise ValueError("Invalid branch reached in get_final_result.\n" +
                              "House: {} \n".format(self.house) +
                              "Player Hand Index, Cards: {0},{1}\n"
-                             .format(hand_index, hand))
-                             
+                             .format(hand_index, hand.cards))
+
+        return (result, net_money)
+
 
     # Calculate the greatest value of this hand under 21.
     def hand_value(hand):
@@ -188,6 +194,15 @@ class Blackjack():
         # Make the new hand the current hand. It will be played first.
         self.player = new_hand
 
+    # Special functions
+    # These functions will not be used during the normal course of play.
+    # They exist to set the board up with specific cards for debuggin purposes
+    # or for setting up scenarios for the player.
+    def spec_house_set_hand(self, hand):
+        self.house = hand
+
+    def spec_player_add_hand(self, hand):
+        self.player_hands.append(Blackjack.PlayerHand(hand))
 
     # Static functions
 
