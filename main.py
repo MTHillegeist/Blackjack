@@ -56,7 +56,7 @@ class Application(tk.Frame):
 
         if(result == Blackjack.PlayResult.BLACKJACK):
             result = self.board_house_plays()
-            self.board_handle_result(result)
+            self.board_finish()
         else:
             self.b_hit["state"] = "normal"
             self.b_double["state"] = "normal"
@@ -67,41 +67,43 @@ class Application(tk.Frame):
 
     def board_double(self):
         self.game.player.double = True
+        hand_ind = self.game.player_hands.index(self.game.player)
 
         result = self.game.hit()
 
-        if(result == Blackjack.PlayResult.CONTINUE or result == Blackjack.PlayResult.TWENTYONE):
-            hand_ind = self.game.player_hands.index(self.game.player)
-            if(hand_ind == 0):
-                result = self.board_house_plays()
-                self.board_handle_result(result)
-            else:
-                self.game.next_split()
+        if(hand_ind != 0):
+            self.game.next_split()
         else:
-            self.board_handle_result(result)
+            if(result == Blackjack.PlayResult.CONTINUE or result == Blackjack.PlayResult.TWENTYONE):
+                result = self.board_house_plays()
+                self.board_finish()
+            else:
+                self.board_finish()
 
         self.scene_update()
 
-    def board_handle_result(self, result):
-        double_ratio = 2 if self.game.player.double else 1
+    # Determine status of all split hands compared with dealer, display those
+    # results, and apply final winnings/losings.
+    def board_finish(self):
+        net_money_total = 0
 
-        if(result == Blackjack.PlayResult.BUST):
-            self.game.money -= double_ratio * self.game.bet
-            self.l_game_result["text"] = "Bust!"
-        elif(result == Blackjack.PlayResult.BLACKJACK):
-            self.game.money += int( self.game.bet * 1.5)
-            self.l_game_result["text"] = "Blackjack!"
-        elif(result == Blackjack.PlayResult.WIN):
-            self.game.money += double_ratio * self.game.bet
-            self.l_game_result["text"] = "Win!"
-        elif(result == Blackjack.PlayResult.PUSH):
-            self.l_game_result["text"] = "Push"
-            self.display_hidden_house = True
-        elif(result == Blackjack.PlayResult.LOSS):
-            self.game.money -= double_ratio * self.game.bet
-            self.l_game_result["text"] = "Loss!"
-        else:
-            raise ValueError("An invalid value was passed to board_handle_result: ".format(result))
+        for index, player_hand in enumerate(self.game.player_hands):
+            result, net_money = self.game.get_final_result(index)
+            net_money_total += net_money
+
+            if(result == Blackjack.PlayResult.BUST):
+                self.l_game_result["text"] = "Bust!"
+            elif(result == Blackjack.PlayResult.BLACKJACK):
+                self.l_game_result["text"] = "Blackjack!"
+            elif(result == Blackjack.PlayResult.WIN):
+                self.l_game_result["text"] = "Win!"
+            elif(result == Blackjack.PlayResult.PUSH):
+                self.l_game_result["text"] = "Push"
+                self.display_hidden_house = True
+            else: #(result == Blackjack.PlayResult.LOSS):
+                self.l_game_result["text"] = "Loss!"
+
+        self.game.money += net_money_total
 
         self.b_hit["state"] = "disabled"
         self.b_double["state"] = "disabled"
@@ -113,20 +115,20 @@ class Application(tk.Frame):
 
     def board_hit(self):
         result = self.game.hit()
+        hand_ind = self.game.player_hands.index(self.game.player)
         # Player did not bust or hit a blackjack. It is still their turn.
         if(result == Blackjack.PlayResult.CONTINUE):
             pass
-        # 21. Player is done and all that is left is for the house to play.
-        # Technically, this is not actually Blackjack because they hit once.
-        elif(result == Blackjack.PlayResult.TWENTYONE):
-            hand_ind = self.game.player_hands.index(self.game.player)
-            if(hand_ind == 0):
+        elif(hand_ind != 0):
+            self.game.next_split()
+        else:
+            # 21. Player is done and all that is left is for the house to play.
+            # Technically, this is not actually Blackjack because they hit once.
+            if(result == Blackjack.PlayResult.TWENTYONE):
                 result = self.board_house_plays()
-                self.board_handle_result(result)
-            else:
-                self.game.next_split()
-        else: #Bust.
-            self.board_handle_result(result)
+                self.board_finish()
+            else: #BUST
+                self.board_finish()
 
         self.scene_update()
 
@@ -135,14 +137,13 @@ class Application(tk.Frame):
         hand_ind = self.game.player_hands.index(self.game.player)
         if(hand_ind == 0):
             result = self.board_house_plays()
-            self.board_handle_result(result)
+            self.board_finish()
         else:
             self.game.next_split()
 
         self.scene_update()
 
     # House plays cards till they win, lose or tie.
-    # Also handles results in cases
     def board_house_plays(self):
         self.b_hit["state"] = "disabled"
         self.b_double["state"] = "disabled"
