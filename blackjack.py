@@ -73,7 +73,7 @@ class Blackjack():
 
         if(p_val > 21):
             result = Blackjack.PlayResult.BUST
-            net_money = double_ratio * self.bet
+            net_money = -1 * double_ratio * self.bet
         elif(p_val == 21 and len(hand.cards) == 2 and h_val != 21):
             result = Blackjack.PlayResult.BLACKJACK
             net_money = int(self.bet * 1.5)

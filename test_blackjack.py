@@ -8,7 +8,7 @@ class TestBlackjack(unittest.TestCase):
         blackjack = Blackjack()
         blackjack.bet = 10
 
-        blackjack.spec_player_add_hand([0,9]) # A, 10: 21
+        blackjack.spec_player_add_hand([0, 9]) # A, 10: 21
         blackjack.spec_house_set_hand([9, 4]) # 10, 5: 15
         result, net_money = blackjack.get_final_result(0)
         self.assertEqual(result, Blackjack.PlayResult.BLACKJACK)
@@ -16,11 +16,56 @@ class TestBlackjack(unittest.TestCase):
 
         blackjack.clear()
 
-        blackjack.spec_player_add_hand([4,9]) # 15
+        blackjack.spec_player_add_hand([4, 9]) # 15
         blackjack.spec_house_set_hand([9, 9]) # 20
         result, net_money = blackjack.get_final_result(0)
         self.assertEqual(result, Blackjack.PlayResult.LOSS)
         self.assertEqual(net_money, -10)
+
+        blackjack.clear()
+
+        blackjack.spec_player_add_hand([9, 9]) # 20
+        blackjack.spec_house_set_hand([9, 6]) # 17
+        result, net_money = blackjack.get_final_result(0)
+        self.assertEqual(result, Blackjack.PlayResult.WIN)
+        self.assertEqual(net_money, 10)
+
+        blackjack.clear()
+
+        blackjack.spec_player_add_hand([9, 9]) # 20
+        blackjack.spec_house_set_hand([9, 9]) # 20
+        result, net_money = blackjack.get_final_result(0)
+        self.assertEqual(result, Blackjack.PlayResult.PUSH)
+        self.assertEqual(net_money, 0)
+
+        blackjack.clear()
+
+        blackjack.spec_player_add_hand([9, 9, 3]) # 22
+        blackjack.spec_house_set_hand([9, 9]) # 20
+        result, net_money = blackjack.get_final_result(0)
+        self.assertEqual(result, Blackjack.PlayResult.BUST)
+        self.assertEqual(net_money, -10)
+
+    def test_get_final_result_splits(self):
+        blackjack = Blackjack()
+        blackjack.bet = 10
+
+        blackjack.spec_player_add_hand([0, 9]) # A, 10: 21
+        blackjack.spec_player_add_hand([9, 9]) # 20
+        blackjack.spec_house_set_hand([9, 7]) # 18
+        result, net_money = blackjack.get_final_result(1)
+        self.assertEqual(result, Blackjack.PlayResult.WIN)
+        self.assertEqual(net_money, 10)
+
+        blackjack.spec_player_add_hand([27, 37, 44]) # 2D, QD, 6C: 18
+        result, net_money = blackjack.get_final_result(2)
+        self.assertEqual(result, Blackjack.PlayResult.PUSH)
+        self.assertEqual(net_money, 0)
+
+        blackjack.spec_player_add_hand([51, 13]) # KC, AS: 21
+        result, net_money = blackjack.get_final_result(3)
+        self.assertEqual(result, Blackjack.PlayResult.BLACKJACK)
+        self.assertEqual(net_money, 15)
 
 # Static Function Tests
     def test_hand_value(self):
