@@ -13,14 +13,15 @@ class Blackjack():
         BLACKJACK = 5,
         TWENTYONE = 6
 
-    class PlayerHand:
-        def __init__(self):
-            self.cards = []
+
+    class PlayerHand():
+        def __init__(self, cards = None):
+            if cards == None:
+                self.cards = []
+            else:
+                self.cards = cards
             self.double = False
 
-        def __init__(self, hand):
-            self.cards = hand
-            self.double = False
 
     def __init__(self):
         self.decks = 2
@@ -185,9 +186,12 @@ class Blackjack():
                              " already 4 splits on table.")
         # Create a new hand and take the top card from the current hand.
         new_hand = Blackjack.PlayerHand()
+        # print(new_hand.cards)
         new_hand.cards.append( self.player.cards.pop() )
+        # print(new_hand.cards)
         # Add a new card to each of the splits.
         self.player.cards.append(self.deck.pop())
+        # print(self.player.cards)
         new_hand.cards.append(self.deck.pop())
         # Add the new hand to the list of hands.
         self.player_hands.append(new_hand)

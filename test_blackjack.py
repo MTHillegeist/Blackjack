@@ -67,6 +67,24 @@ class TestBlackjack(unittest.TestCase):
         self.assertEqual(result, Blackjack.PlayResult.BLACKJACK)
         self.assertEqual(net_money, 15)
 
+    def test_player_hand(self):
+        p_hand = Blackjack.PlayerHand()
+        p_hand.cards.append(1)
+        p_hand.cards.append(2)
+
+        for a, b in zip(p_hand.cards, [1,2]):
+            self.assertEqual(a,b)
+
+        p_hand2 = Blackjack.PlayerHand()
+        p_hand2.cards.append(3)
+        p_hand2.cards.append(4)
+
+        # There was a bug where the cards were shared between hands due
+        # to the cards in the PlayerHand arguments defaulting to '[]' instead
+        # of None.
+        for a, b in zip(p_hand2.cards, [3,4]):
+            self.assertEqual(a,b)
+
 # Static Function Tests
     def test_hand_value(self):
         errors = 0
