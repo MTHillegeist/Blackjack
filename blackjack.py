@@ -151,13 +151,7 @@ class Blackjack():
             else:# (h_val == p_val):
                 return Blackjack.PlayResult.PUSH
 
-    # Should be called after a hand is done being played. Moves to the next_split
-    # hand in line.
-    def next_split(self):
-        curr_index = self.player_hands.index(self.player)
-        if(curr_index == 0):
-            raise ValueError("Attempt to move to next hand when at hand 0.")
-        self.player = self.player_hands[curr_index - 1]
+
 
     # Reshuffles deck and clears hands and discard pile.
     def reset(self):
@@ -181,9 +175,16 @@ class Blackjack():
     # Only works if the current hand has exactly two of the same cards
     # and this is not the fourth hand (after three splits.)
     def split(self):
-        if(len(self.player_hands) == self.max_splits):
+        if(len(self.player_hands) >= self.max_splits):
             raise ValueError("Attempt to call split function when their are" +
                              " already 4 splits on table.")
+
+        if(len(self.player.cards) != 2):
+            raise ValueError("Attempt to split a hand that has more than " +
+                             "two cards.")
+        # Removed for debugging purposes.
+        # if(self.player.cards[0] % 13 != self.player.cards[1] % 13):
+        #     raise ValueError("Attempt to split cards that do not match.")
         # Create a new hand and take the top card from the current hand.
         new_hand = Blackjack.PlayerHand()
         # print(new_hand.cards)
@@ -198,6 +199,24 @@ class Blackjack():
         # Make the new hand the current hand. It will be played first.
         self.player = new_hand
 
+    # Should be called after a hand is done being played. Moves to the next_split
+    # hand in line.
+    def split_next(self):
+        curr_index = self.player_hands.index(self.player)
+        if(curr_index == 0):
+            raise ValueError("Attempt to move to next hand when at hand 0.")
+        self.player = self.player_hands[curr_index - 1]
+
+    # Determine if the current hand can be split.
+    def splittable(self):
+        if(len(self.player_hands) >= self.max_splits):
+            return False
+        if(len(self.player.cards) != 2):
+            return False
+        # if(self.player.cards[0] % 13 != self.player.cards[1] % 13):
+        #     return False
+
+        return True
     # Special functions
     # These functions will not be used during the normal course of play.
     # They exist to set the board up with specific cards for debuggin purposes

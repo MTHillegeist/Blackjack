@@ -18,7 +18,7 @@ class Application(tk.Frame):
         self.master = master
         self.master.title("Blackjack - Basic Strategy")
         # self.master.iconbitmap('out3_nr3_icon.ico')
-        self.master.geometry("800x500")
+        self.master.geometry("900x500")
         self.pack(fill="both", expand=1)
 
         self.game = Blackjack()
@@ -54,6 +54,9 @@ class Application(tk.Frame):
         self.game.clear()
         result = self.game.deal()
 
+        if(self.game.splittable()):
+            self.b_split["state"] = "normal"
+
         if(result == Blackjack.PlayResult.BLACKJACK):
             result = self.board_house_plays()
             self.board_finish()
@@ -72,7 +75,7 @@ class Application(tk.Frame):
         result = self.game.hit()
 
         if(hand_ind != 0):
-            self.game.next_split()
+            self.board_split_next()
         else:
             if(result == Blackjack.PlayResult.CONTINUE or result == Blackjack.PlayResult.TWENTYONE):
                 result = self.board_house_plays()
@@ -80,6 +83,7 @@ class Application(tk.Frame):
             else:
                 self.board_finish()
 
+        self.b_split["state"] = "disabled"
         self.scene_update()
 
     # Determine status of all split hands compared with dealer, display those
@@ -87,26 +91,52 @@ class Application(tk.Frame):
     def board_finish(self):
         net_money_total = 0
 
-        for index, player_hand in enumerate(self.game.player_hands):
-            result, net_money = self.game.get_final_result(index)
-            net_money_total += net_money
+        if len(self.game.player_hands) > 1:
+            lst_text = []
+            for index, player_hand in enumerate(self.game.player_hands):
+                result, net_money = self.game.get_final_result(index)
+                net_money_total += net_money
+                d_text = "D-" if player_hand.double else ""
 
+                if(result == Blackjack.PlayResult.BUST):
+                    lst_text.append(d_text + "Bust")
+                elif(result == Blackjack.PlayResult.BLACKJACK):
+                    lst_text.append("Blackjack")
+                    self.display_hidden_house = True
+                elif(result == Blackjack.PlayResult.WIN):
+                    lst_text.append(d_text + "Win")
+                    self.display_hidden_house = True
+                elif(result == Blackjack.PlayResult.PUSH):
+                    lst_text.append("Push")
+                    self.display_hidden_house = True
+                else: #(result == Blackjack.PlayResult.LOSS):
+                    lst_text.append(d_text + "Loss")
+                    self.display_hidden_house = True
+
+            self.l_game_result["text"] = (" + ".join(lst_text) ) + " = {}".format(net_money_total)
+        else:
+            result, net_money_total = self.game.get_final_result(0)
+            d_text = "Double " if self.game.player.double else ""
             if(result == Blackjack.PlayResult.BUST):
-                self.l_game_result["text"] = "Bust!"
+                self.l_game_result["text"] = d_text + "Bust!"
             elif(result == Blackjack.PlayResult.BLACKJACK):
                 self.l_game_result["text"] = "Blackjack!"
+                self.display_hidden_house = True
             elif(result == Blackjack.PlayResult.WIN):
-                self.l_game_result["text"] = "Win!"
+                self.l_game_result["text"] = d_text + "Win!"
+                self.display_hidden_house = True
             elif(result == Blackjack.PlayResult.PUSH):
                 self.l_game_result["text"] = "Push"
                 self.display_hidden_house = True
             else: #(result == Blackjack.PlayResult.LOSS):
-                self.l_game_result["text"] = "Loss!"
+                self.l_game_result["text"] = d_text + "Loss!"
+                self.display_hidden_house = True
 
         self.game.money += net_money_total
 
         self.b_hit["state"] = "disabled"
         self.b_double["state"] = "disabled"
+        self.b_split["state"] = "disabled"
         self.b_hold["state"] = "disabled"
         self.b_deal["state"] = "normal"
         self.b_clear["state"] = "normal"
@@ -120,7 +150,7 @@ class Application(tk.Frame):
         if(result == Blackjack.PlayResult.CONTINUE):
             pass
         elif(hand_ind != 0):
-            self.game.next_split()
+            self.board_split_next()
         else:
             # 21. Player is done and all that is left is for the house to play.
             # Technically, this is not actually Blackjack because they hit once.
@@ -130,6 +160,7 @@ class Application(tk.Frame):
             else: #BUST
                 self.board_finish()
 
+        self.b_split["state"] = "disabled"
         self.scene_update()
 
     def board_hold(self):
@@ -139,7 +170,7 @@ class Application(tk.Frame):
             result = self.board_house_plays()
             self.board_finish()
         else:
-            self.game.next_split()
+            self.board_split_next()
 
         self.scene_update()
 
@@ -186,7 +217,19 @@ class Application(tk.Frame):
     def board_split(self):
         self.game.split()
 
+        print(self.game.splittable())
+        if(self.game.splittable() == False):
+            self.b_split["state"] = "disabled"
+
         self.scene_update()
+
+    def board_split_next(self):
+        self.game.split_next()
+
+        if(self.game.splittable()):
+            self.b_split["state"] = "normal"
+        else:
+            self.b_split["state"] = "disabled"
 
 
     def change_bet(self):
