@@ -96,23 +96,6 @@ class Blackjack():
         return (result, net_money)
 
 
-    # Calculate the greatest value of this hand under 21.
-    def hand_value(hand):
-        # Convert card numbers that can be 0 to 51 into their blackjack values.
-        mod_hand = [min((x % 13)+1, 10) for x in hand]
-        # Start by converting all aces to 11.
-        mod_hand = [11 if x == 1 else x for x in mod_hand]
-
-        # If total value is greater than 21, convert aces to ones until it is
-        # less.
-        while( sum(mod_hand) > 21 and 11 in mod_hand):
-            for index, card in enumerate(mod_hand):
-                if( card == 11):
-                    mod_hand[index] = 1
-                    break;
-
-        return sum(mod_hand)
-
     # hit
     def hit(self):
         self.player.cards.append(self.deck.pop())
@@ -182,9 +165,11 @@ class Blackjack():
         if(len(self.player.cards) != 2):
             raise ValueError("Attempt to split a hand that has more than " +
                              "two cards.")
-        # Removed for debugging purposes.
-        # if(self.player.cards[0] % 13 != self.player.cards[1] % 13):
-        #     raise ValueError("Attempt to split cards that do not match.")
+
+        if(self.player.cards[0] % 13 != self.player.cards[1] % 13):
+            raise ValueError("Attempt to split cards that do not match.")
+            
+        curr_index = self.player_hands.index(self.player)
         # Create a new hand and take the top card from the current hand.
         new_hand = Blackjack.PlayerHand()
         # print(new_hand.cards)
@@ -195,9 +180,12 @@ class Blackjack():
         # print(self.player.cards)
         new_hand.cards.append(self.deck.pop())
         # Add the new hand to the list of hands.
-        self.player_hands.append(new_hand)
+        self.player_hands.insert(curr_index+1, new_hand)
         # Make the new hand the current hand. It will be played first.
-        self.player = new_hand
+        # Do not bother setting current hand equal to the new hand if it's a
+        # Blackjack.
+        if(Blackjack.hand_value(new_hand.cards) != 21):
+            self.player = new_hand
 
     # Should be called after a hand is done being played. Moves to the next_split
     # hand in line.
@@ -213,8 +201,8 @@ class Blackjack():
             return False
         if(len(self.player.cards) != 2):
             return False
-        # if(self.player.cards[0] % 13 != self.player.cards[1] % 13):
-        #     return False
+        if(self.player.cards[0] % 13 != self.player.cards[1] % 13):
+            return False
 
         return True
     # Special functions
@@ -228,6 +216,23 @@ class Blackjack():
         self.player_hands.append(Blackjack.PlayerHand(hand))
 
     # Static functions
+
+    # Calculate the greatest value of this hand under 21.
+    def hand_value(hand):
+        # Convert card numbers that can be 0 to 51 into their blackjack values.
+        mod_hand = [min((x % 13)+1, 10) for x in hand]
+        # Start by converting all aces to 11.
+        mod_hand = [11 if x == 1 else x for x in mod_hand]
+
+        # If total value is greater than 21, convert aces to ones until it is
+        # less.
+        while( sum(mod_hand) > 21 and 11 in mod_hand):
+            for index, card in enumerate(mod_hand):
+                if( card == 11):
+                    mod_hand[index] = 1
+                    break;
+
+        return sum(mod_hand)
 
     # Convert number between 0 and 51 into a string matching a card sprite file.
     def number_to_card(number):

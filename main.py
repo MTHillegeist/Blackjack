@@ -29,6 +29,7 @@ class Application(tk.Frame):
         self.card_width = 100
         self.card_height = 145
         self.display_hidden_house = False
+        self.game_finished = True
 
         self.images_load()
         self.widgets_create()
@@ -47,6 +48,7 @@ class Application(tk.Frame):
     def board_deal(self):
         self.l_game_result["text"] = ""
         self.display_hidden_house = False
+        self.game_finished = False
         self.b_deal["state"] = "disabled"
         self.b_clear["state"] = "disabled"
         self.b_change_bet.grid_remove()
@@ -54,8 +56,7 @@ class Application(tk.Frame):
         self.game.clear()
         result = self.game.deal()
 
-        if(self.game.splittable()):
-            self.b_split["state"] = "normal"
+
 
         if(result == Blackjack.PlayResult.BLACKJACK):
             result = self.board_house_plays()
@@ -64,7 +65,8 @@ class Application(tk.Frame):
             self.b_hit["state"] = "normal"
             self.b_double["state"] = "normal"
             self.b_hold["state"] = "normal"
-            self.b_split["state"] = "normal"
+            if(self.game.splittable()):
+                self.b_split["state"] = "normal"
 
         self.scene_update()
 
@@ -134,6 +136,7 @@ class Application(tk.Frame):
 
         self.game.money += net_money_total
 
+        self.game_finished = True
         self.b_hit["state"] = "disabled"
         self.b_double["state"] = "disabled"
         self.b_split["state"] = "disabled"
@@ -217,7 +220,6 @@ class Application(tk.Frame):
     def board_split(self):
         self.game.split()
 
-        print(self.game.splittable())
         if(self.game.splittable() == False):
             self.b_split["state"] = "disabled"
 
@@ -288,7 +290,7 @@ class Application(tk.Frame):
                 card_name = num_to_card(card)
                 ph_image.paste(self.card_sprites[card_name], (20 * num, 0 ), self.card_sprites[card_name])
 
-            if(hand != self.game.player):
+            if(hand != self.game.player and self.game_finished != True):
                 enhancer = ImageEnhance.Brightness(ph_image)
                 ph_image = enhancer.enhance(0.5)
 
@@ -323,9 +325,6 @@ class Application(tk.Frame):
 
         Application.tk_set_image(self.deck, self.card_sprites["back"])
         Application.tk_set_image(self.house_hand, hh_image)
-
-
-
 
     def tk_set_image(tk_object, img):
         if(img == None):
@@ -430,7 +429,7 @@ class Application(tk.Frame):
 
         self.f_player = tk.Frame(self.f2)
         self.f_player["bg"] = self.bg_color
-        self.f_player.pack(side="top", fill="x", expand=0, padx=card_padx, pady=card_pady)
+        self.f_player.pack(side="top", expand=0, padx=card_padx, pady=card_pady)
 
         self.l_player_hands = []
 
