@@ -59,7 +59,6 @@ class Application(tk.Frame):
 
 
         if(result == Blackjack.PlayResult.BLACKJACK):
-            result = self.board_house_plays()
             self.board_finish()
         else:
             self.b_hit["state"] = "normal"
@@ -79,11 +78,7 @@ class Application(tk.Frame):
         if(hand_ind != 0):
             self.board_split_next()
         else:
-            if(result == Blackjack.PlayResult.CONTINUE or result == Blackjack.PlayResult.TWENTYONE):
-                result = self.board_house_plays()
-                self.board_finish()
-            else:
-                self.board_finish()
+            self.board_finish()
 
         self.b_split["state"] = "disabled"
         self.scene_update()
@@ -92,6 +87,13 @@ class Application(tk.Frame):
     # results, and apply final winnings/losings.
     def board_finish(self):
         net_money_total = 0
+
+        # If there is any hand that is not a bust, the house must play.
+        for index in range(0, len(self.game.player_hands)):
+            result, net_money = self.game.get_final_result(index)
+            if(result != Blackjack.PlayResult.BUST):
+                self.board_house_plays()
+                break
 
         if len(self.game.player_hands) > 1:
             lst_text = []
@@ -155,13 +157,7 @@ class Application(tk.Frame):
         elif(hand_ind != 0):
             self.board_split_next()
         else:
-            # 21. Player is done and all that is left is for the house to play.
-            # Technically, this is not actually Blackjack because they hit once.
-            if(result == Blackjack.PlayResult.TWENTYONE):
-                result = self.board_house_plays()
-                self.board_finish()
-            else: #BUST
-                self.board_finish()
+            self.board_finish()
 
         self.b_split["state"] = "disabled"
         self.scene_update()
@@ -170,7 +166,6 @@ class Application(tk.Frame):
 
         hand_ind = self.game.player_hands.index(self.game.player)
         if(hand_ind == 0):
-            result = self.board_house_plays()
             self.board_finish()
         else:
             self.board_split_next()
